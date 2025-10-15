@@ -66,7 +66,6 @@ impl ContratoBiblia {
         } else {
             String::from_str(&env, "Registro de leitura não encontrado.")
         }
-
     }
 
 
