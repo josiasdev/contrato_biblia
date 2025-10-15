@@ -62,9 +62,9 @@ impl ContratoBiblia {
             .get(&DataKey::Leituras)
             .unwrap_or_else(|| Map::new(&env));
         if let Some(true) = leituras.get((leitor, id_texto)){
-            String::from_slice(&env, "Leitura confirmada!")
+            String::from_str(&env, "Leitura confirmada!")
         } else {
-            String::from_slice(&env, "Registro de leitura não encontrado.")
+            String::from_str(&env, "Registro de leitura não encontrado.")
         }
 
     }
