@@ -1,0 +1,28 @@
+ [package]
+name = "contrato_biblia"
+version = "0.1.0"
+edition = "2024"
+authors = ["Josias Batista francisco.batista67@alu.ufc.br"]
+description = "Uma biblioteca Rust para um smart contract na blockchain Stellar (Soroban) focado em uma aplicação da Bíblia Sagrada."
+license = "MIT"
+repository = "https://github.com/josiasdev/contrato_biblia"
+keywords = ["stellar" , "soroban", "blockchain", "smart-contract", "bible"]
+categories = ["api-bindings"]
+
+
+[dependencies]
+soroban-sdk = "23.0.3"
+
+
+ [lib]
+ crate-type = ["cdylib"]
+
+ [profile.release]
+ opt-level = "z"
+ overflow-checks = true
+ debug = 0
+ strip = "symbols"
+ debug-assertions = false
+ panic = "abort"
+ codegen-units = 1
+ lto = true
