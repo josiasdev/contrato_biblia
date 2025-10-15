@@ -1,8 +1,18 @@
 # Contrato Bíblia (Stellar/Soroban)
 
-Este projeto é uma implementação de um smart contract simples na blockchain Stellar, utilizando a plataforma Soroban e a linguagem de programação Rust. O objetivo é fornecer uma base descentralizada e imutável para aplicações relacionadas à Bíblia Sagrada.
+![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
+![Stellar](https://img.shields.io/badge/stellar-%23000000.svg?style=for-the-badge&logo=stellar&logoColor=white)
+![WebAssembly](https://img.shields.io/badge/webassembly-%23654FF0.svg?style=for-the-badge&logo=webassembly&logoColor=white)
 
-O contrato foi desenvolvido como uma biblioteca Rust (`crate`) e pode ser compilado para WebAssembly (WASM) para ser implantado em qualquer rede Stellar que suporte Soroban (como `futurenet` ou a rede principal).
+Uma biblioteca Rust para um smart contract na blockchain Stellar (Soroban) focado em uma aplicação da Bíblia Sagrada.
+
+## Tecnologias Utilizadas
+
+* **Linguagem:** Rust (Edição 2021)
+* **Blockchain:** Stellar (Futurenet)
+* **Plataforma de Smart Contracts:** Soroban
+* **SDK:** `soroban-sdk`
+* **Ferramenta de Linha de Comando:** `stellar-cli`
 
 ## Funcionalidades Principais
 
@@ -52,22 +62,22 @@ Para implantar o contrato, você precisará de uma conta na rede de testes `futu
 
 1.  **Crie e Funde uma Conta:**
     ```bash
-    # Crie uma identidade (ex: 'meu_admin')
-    stellar keypair new meu_admin --save
+    # Crie uma identidade como admin
+    stellar keys generate admin --network testnet --fund
 
     # Obtenha o endereço público
-    ADMIN_ADDRESS=$(stellar keypair address --name meu_admin)
-
-    # Use o Friendbot da Futurenet para obter XLM de teste
-    # Acesse: [https://friendbot.stellar.org/?addr=](https://friendbot.stellar.org/?addr=)<SEU_ENDERECO_AQUI>&network=futurenet
+    ADMIN_ADDRESS=$(stellar keys address admin)
     ```
+    
+    #### Use o Friendbot da Futurenet para obter XLM de teste
+    Acesse: [Friendbot: fund a futurenet network account](https://lab.stellar.org/account/fund?$=network$id=futurenet&label=Futurenet&horizonUrl=https:////horizon-futurenet.stellar.org&rpcUrl=https:////rpc-futurenet.stellar.org&passphrase=Test%20SDF%20Future%20Network%20/;%20October%202022;;)
 
 2.  **Implante o Contrato:**
     ```bash
     stellar contract deploy \
       --wasm target/wasm32-unknown-unknown/release/contrato_biblia.wasm \
-      --source meu_admin \
-      --network futurenet
+      --source-account admin \
+      --network futurenet \ --alias contrato_biblia
     ```
     Guarde o **ID do Contrato** (ex: `C...`) retornado por este comando.
 
@@ -78,11 +88,11 @@ Após a implantação, o contrato precisa ser inicializado com o endereço do ad
 ```bash
 # Substitua as variáveis pelos seus valores
 ID_DO_CONTRATO="C..."
-ADMIN_ADDRESS="..." 
+ADMIN_ADDRESS=$(stellar keys address admin) 
 
 stellar contract invoke \
   --id $ID_DO_CONTRATO \
-  --source meu_admin \
+  --source-account admin \
   --network futurenet \
   -- \
   initialize \
@@ -96,12 +106,12 @@ stellar contract invoke \
 O administrador pode registrar o hash de Gênesis 1:1.
 
 ```bash
-ID_DO_CONTRATO="C..."
+ID_DO_CONTRATO="..."
 HASH_GEN_1_1="f2e9a224a50ee5118533e4544253966a348003183a69620596323145f15a201b"
 
 stellar contract invoke \
   --id $ID_DO_CONTRATO \
-  --source meu_admin \
+  --source-account meu_admin \
   --network futurenet \
   -- \
   registrar_hash \
@@ -111,38 +121,55 @@ stellar contract invoke \
 
 ### Marcando um Versículo como Lido (Qualquer Usuário)
 
-Um usuário (com uma conta `leitor_joao` fundada) pode marcar Gênesis 1:1 como lido.
+Um usuário (com uma conta `leitor_josias` fundada) pode marcar Gênesis 1:1 como lido.
 
 ```bash
-ID_DO_CONTRATO="C..."
+stellar keys generate leitor --network futurenet
+LEITOR_ADDRESS=$(stellar keys address leitor)
+
+```
+
+```bash
+ID_DO_CONTRATO="..."
+LEITOR_ADDRESS=$(stellar keys address leitor)
+
 
 stellar contract invoke \
   --id $ID_DO_CONTRATO \
-  --source leitor_joao \
+  --source leitor \
   --network futurenet \
   -- \
   marcar_lido \
+  -- leitor $LEITOR_ADDRESS \
   --id_texto GEN_1_1
 ```
 
 ### Verificando a Leitura de um Usuário
 
-Qualquer pessoa pode verificar se `leitor_joao` leu o versículo.
+Qualquer pessoa pode verificar se `leitor` leu o versículo.
 
 ```bash
-ID_DO_CONTRATO="C..."
-ENDERECO_DO_LEITOR="..."
+ID_DO_CONTRATO="..."
+LEITOR_ADDRESS=$(stellar keys address leitor)
 
 stellar contract invoke \
   --id $ID_DO_CONTRATO \
+  --source admin \
   --network futurenet \
   -- \
   verificar_leitura \
-  --leitor $ENDERECO_DO_LEITOR \
+  --leitor $LEITOR_ADDRESS \
   --id_texto GEN_1_1
 ```
-O resultado esperado é `true`.
 
+O resultado esperado no terminal será uma `String` descritiva:
+```json
+"Leitura confirmada!"
+```
+Ou, caso o registro não exista:
+```json
+"Registro de leitura não encontrado."
+```
 
 ## Licença
 
