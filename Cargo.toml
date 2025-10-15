@@ -1,9 +1,9 @@
  [package]
 name = "contrato_biblia"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 publish = true
-authors = ["Josias Batista francisco.batista67@alu.ufc.br"]
+authors = ["Josias Batista <francisco.batista67@alu.ufc.br>"]
 description = "Uma biblioteca Rust para um smart contract na blockchain Stellar (Soroban) focado em uma aplicação da Bíblia Sagrada."
 license = "MIT"
 repository = "https://github.com/josiasdev/contrato_biblia"
