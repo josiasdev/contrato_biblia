@@ -1,6 +1,7 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, Env, Symbol, Address, Map, BytesN};
+use soroban_sdk::{contract, contractimpl, contracttype, Env, Symbol, Address, Map, BytesN, String};
 use core::cmp::Ordering;
+
 
 #[contracttype]
 #[derive(Clone)]
@@ -56,12 +57,16 @@ impl ContratoBiblia {
         env.storage().instance().set(&DataKey::Leituras, &leituras);
     }
 
-    pub fn verificar_leitura(env: Env, leitor: Address, id_texto: Symbol) -> bool {
+    pub fn verificar_leitura(env: Env, leitor: Address, id_texto: Symbol) -> String {
         let leituras: Map<(Address, Symbol), bool> = env.storage().instance()
             .get(&DataKey::Leituras)
             .unwrap_or_else(|| Map::new(&env));
+        if let Some(true) = leituras.get((leitor, id_texto)){
+            String::from_slice(&env, "Leitura confirmada!")
+        } else {
+            String::from_slice(&env, "Registro de leitura não encontrado.")
+        }
 
-        leituras.get((leitor, id_texto)).unwrap_or(false)
     }
 
 
