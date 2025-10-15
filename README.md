@@ -21,8 +21,15 @@ Siga os passos abaixo para compilar, implantar e interagir com este contrato.
 Antes de começar, garanta que você tenha as seguintes ferramentas instaladas:
 
 * **Rust Toolchain**: [https://www.rust-lang.org/tools/install](https://www.rust-lang.org/tools/install)
-* **WASM Target**: `rustup target add wasm32-unknown-unknown`
-* **Stellar CLI**: `npm install -g stellar-cli` (requer Node.js)
+* **WASM Target**: 
+```bash
+rustup target add wasm32-unknown-unknown
+```
+
+* **Stellar CLI**:
+```bash
+npm install -g stellar-cli
+```
 
 ### 1. Compilação
 Clone este repositório:
