@@ -4,7 +4,8 @@
 ![Stellar](https://img.shields.io/badge/stellar-%23000000.svg?style=for-the-badge&logo=stellar&logoColor=white)
 ![WebAssembly](https://img.shields.io/badge/webassembly-%23654FF0.svg?style=for-the-badge&logo=webassembly&logoColor=white)
 
-Uma biblioteca Rust para um smart contract na blockchain Stellar (Soroban) focado em uma aplicação da Bíblia Sagrada.
+Uma biblioteca Rust para um smart contract na blockchain Stellar (Soroban) focado em uma aplicação social e de estudo da Bíblia Sagrada.
+
 
 ## Tecnologias Utilizadas
 
@@ -14,13 +15,16 @@ Uma biblioteca Rust para um smart contract na blockchain Stellar (Soroban) focad
 * **SDK:** `soroban-sdk`
 * **Ferramenta de Linha de Comando:** `stellar-cli`
 
-## Funcionalidades Principais
+## Funcionalidades
 
-O contrato oferece duas funcionalidades essenciais:
-
-1.  **Registro de Autenticidade**: Permite que um administrador registre o hash `SHA-256` de textos bíblicos (capítulos ou versículos). Isso cria um "selo digital" on-chain que pode ser usado para verificar se uma cópia digital do texto é autêntica e não foi adulterada.
-
-2.  **Prova de Leitura**: Qualquer usuário pode interagir com o contrato para marcar um determinado texto como "lido". Isso cria um registro público e permanente do progresso de leitura de um indivíduo, que não pode ser censurado ou alterado.
+✅ **Autenticidade de Textos**: Verificação da integridade de textos bíblicos usando hashes SHA-256. <br>
+✅ **Prova de Leitura**: Sistema de registro de progresso de leitura na blockchain. <br>
+✅ **Reflexões Pessoais**: Usuários podem escrever e armazenar reflexões (públicas ou privadas) sobre passagens. <br>
+✅ **Engajamento Social**: Sistema de curtidas e comentários para promover a interação comunitária. <br>
+✅ **Gerenciamento de Comentários**: Usuários podem adicionar e remover seus próprios comentários. <br>
+✅ **Moderação**: Sistema de status para gerenciamento e moderação de reflexões. <br>
+✅ **Testes Abrangentes**: Cobertura de testes unitários para todas as principais funcionalidades. <br>
+✅ **Documentação e Tipagem Segura**: Código totalmente documentado e com tipos de dados bem definidos.
 
 ## Como Compilar e Usar
 
@@ -170,6 +174,79 @@ Ou, caso o registro não exista:
 ```json
 "Registro de leitura não encontrado."
 ```
+
+### Funções Sociais (Reflexões)
+
+#### Adicionando uma Reflexão Pública
+
+O `leitor_josias` adiciona uma reflexão sobre Gênesis 1:1.
+
+```bash
+stellar contract invoke \
+  --id $CONTRACT_ID \
+  --source leitor_josias \
+  --network futurenet \
+  -- \
+  adicionar_reflexao \
+  --leitor $LEITOR_ADDRESS \
+  --id_texto GEN_1_1 \
+  --conteudo "Esta passagem é a base de tudo." \
+  --publica true
+```
+
+#### Curtindo uma Reflexão
+
+Um segundo usuário (`leitora_ana`) curte a reflexão do Josias.
+
+```bash
+# 1. Crie e funde a conta da 'leitora_ana'
+stellar keys generate leitora_ana --network futurenet
+# ... use o Friendbot
+
+# 2. Invoque a função curtir_reflexao
+stellar contract invoke \
+  --id $CONTRACT_ID \
+  --source leitora_ana \
+  --network futurenet \
+  -- \
+  curtir_reflexao \
+  --curtidor $(stellar keys address leitora_ana) \
+  --id_texto GEN_1_1 \
+  --autor_reflexao $LEITOR_ADDRESS
+```
+
+#### Comentando em uma Reflexão
+
+A `leitora_ana` também deixa um comentário.
+
+```bash
+stellar contract invoke \
+  --id $CONTRACT_ID \
+  --source leitora_ana \
+  --network futurenet \
+  -- \
+  comentar_reflexao \
+  --comentarista $(stellar keys address leitora_ana) \
+  --id_texto GEN_1_1 \
+  --autor_reflexao $LEITOR_ADDRESS \
+  --conteudo "Concordo plenamente! Ótima reflexão."
+```
+
+#### Listando Reflexões Públicas
+
+Qualquer pessoa pode listar as reflexões públicas de uma passagem (com paginação).
+
+```bash
+stellar contract invoke \
+  --id $CONTRACT_ID \
+  --network futurenet \
+  -- \
+  listar_reflexoes_publicas \
+  --id_texto GEN_1_1 \
+  --limite 10 \
+  --offset 0
+```
+O resultado será um vetor (`Vec`) contendo a estrutura completa da reflexão do `leitor_josias`.
 
 ## Licença
 
