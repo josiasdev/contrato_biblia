@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, Env, Symbol, Address, Map, BytesN, String, Vec};
+use soroban_sdk::{contract, contractimpl, contracttype, Env, Address, Map, BytesN, String, Vec};
 use core::cmp::Ordering;
 
 mod types;
