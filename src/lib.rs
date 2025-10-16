@@ -12,14 +12,14 @@ pub use reflexoes::*;
 #[derive(Clone)]
 pub enum DataKey {
     Admin, //  Chave para o endereço do administrador
-    Hashes, // Chave para o mapa de hashes dos textos (Symbol -> BytesN<32>)
-    Leituras, // Chave para o mapa de leituras ((Address, Symbol) -> bool)
-    Reflexoes(Symbol, Address),
-    ContadorReflexoes(Symbol),
-    ReflexoesPublicas(Symbol, u32),
-    CurtidasReflexao(Symbol, Address, Address),
-    ComentariosReflexao(Symbol, Address),
-    StatusReflexoes(Symbol, Address),
+    Hashes, // Chave para o mapa de hashes dos textos (Map<IdTexto, BytesN<32>>)
+    Leituras, // Chave para o mapa de leituras Map será Map<(Address, IdTexto), bool>
+    Reflexoes(IdTexto, Address),
+    ContadorReflexoes(IdTexto),
+    ReflexoesPublicas(IdTexto, u32),
+    CurtidasReflexao(IdTexto, Address, Address),
+    ComentariosReflexao(IdTexto, Address),
+    StatusReflexoes(IdTexto, Address),
 }
 
 #[contract]
