@@ -34,6 +34,14 @@ pub enum StatusReflexao {
     Removida,
 }
 
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub struct IdTexto {
+    pub livro: u32,
+    pub capitulo: u32,
+    pub versiculo: u32,
+}
+
 // Constantes para validação e limites do sistema
 pub const MAX_REFLEXAO_CHARS: u32 = 500;
 pub const MAX_COMENTARIO_CHARS: u32 = 200;
