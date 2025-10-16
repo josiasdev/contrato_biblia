@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, Address, Symbol, String, BytesN};
+use soroban_sdk::{contracttype, Address, String, BytesN};
 
 // Estrutura principal para armazenar reflexões dos usuários
 /// Combina o conteúdo com metadados para verificação e controle
@@ -6,7 +6,7 @@ use soroban_sdk::{contracttype, Address, Symbol, String, BytesN};
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Reflexao {
     pub leitor: Address,
-    pub id_texto: Symbol,
+    pub id_texto: IdTexto,
     pub conteudo: String,
     pub timestamp: u64,
     pub hash_reflexao: BytesN<32>,
