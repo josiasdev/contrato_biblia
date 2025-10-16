@@ -34,20 +34,20 @@ impl ContratoBiblia {
         env.storage().instance().set(&DataKey::Admin, &admin);
     }
 
-    pub fn registrar_hash(env: Env, id_texto: Symbol, hash: BytesN<32>) {
+    pub fn registrar_hash(env: Env, id_texto: IdTexto, hash: BytesN<32>) {
         let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         admin.require_auth();
 
-        let mut hashes: Map<Symbol, BytesN<32>> = env.storage().instance().get(&DataKey::Hashes).unwrap_or_else(|| Map::new(&env));
+        let mut hashes: Map<IdTexto, BytesN<32>> = env.storage().instance().get(&DataKey::Hashes).unwrap_or_else(|| Map::new(&env));
 
         hashes.set(id_texto, hash);
         env.storage().instance().set(&DataKey::Hashes, &hashes);
     }
 
-    pub fn verificar_texto(env: Env, id_texto: Symbol, texto: soroban_sdk::Bytes) -> bool {
+    pub fn verificar_texto(env: Env, id_texto: IdTexto, texto: soroban_sdk::Bytes) -> bool {
         let hash_calculado: BytesN<32> = env.crypto().sha256(&texto).into();
 
-        let hashes: Map<Symbol, BytesN<32>> = env.storage().instance()
+        let hashes: Map<IdTexto, BytesN<32>> = env.storage().instance()
             .get(&DataKey::Hashes)
             .unwrap_or_else(|| Map::new(&env));
 
@@ -58,16 +58,16 @@ impl ContratoBiblia {
         }
     }
 
-    pub fn marcar_lido(env: Env, leitor: Address, id_texto: Symbol) {
+    pub fn marcar_lido(env: Env, leitor: Address, id_texto: IdTexto) {
         leitor.require_auth();
-        let mut leituras: Map<(Address, Symbol), bool> = env.storage().instance().get(&DataKey::Leituras).unwrap_or_else(|| Map::new(&env));
+        let mut leituras: Map<(Address, IdTexto), bool> = env.storage().instance().get(&DataKey::Leituras).unwrap_or_else(|| Map::new(&env));
 
         leituras.set((leitor, id_texto), true);
         env.storage().instance().set(&DataKey::Leituras, &leituras);
     }
 
-    pub fn verificar_leitura(env: Env, leitor: Address, id_texto: Symbol) -> String {
-        let leituras: Map<(Address, Symbol), bool> = env.storage().instance()
+    pub fn verificar_leitura(env: Env, leitor: Address, id_texto: IdTexto) -> String {
+        let leituras: Map<(Address, IdTexto), bool> = env.storage().instance()
             .get(&DataKey::Leituras)
             .unwrap_or_else(|| Map::new(&env));
         if let Some(true) = leituras.get((leitor, id_texto)){
@@ -85,7 +85,7 @@ impl ContratoBiblia {
     pub fn adicionar_reflexao(
         env: Env,
         leitor: Address,
-        id_texto: Symbol,
+        id_texto: IdTexto,
         conteudo: String,
         publica: bool,
     ) {
@@ -97,7 +97,7 @@ impl ContratoBiblia {
     pub fn obter_reflexao(
         env: Env,
         leitor: Address,
-        id_texto: Symbol,
+        id_texto: IdTexto,
     ) -> Option<Reflexao> {
         reflexoes::obter_reflexao(env, leitor, id_texto)
     }
@@ -107,7 +107,7 @@ impl ContratoBiblia {
     /// Filtra automaticamente reflexões removidas ou privadas
     pub fn listar_reflexoes_publicas(
         env: Env,
-        id_texto: Symbol,
+        id_texto: IdTexto,
         limite: u32,
         offset: u32,
     ) -> Vec<Reflexao> {
@@ -120,7 +120,7 @@ impl ContratoBiblia {
     pub fn curtir_reflexao(
         env: Env,
         curtidor: Address,
-        id_texto: Symbol,
+        id_texto: IdTexto,
         autor_reflexao: Address,
     ) {
         reflexoes::curtir_reflexao(env, curtidor, id_texto, autor_reflexao)
@@ -132,7 +132,7 @@ impl ContratoBiblia {
     pub fn comentar_reflexao(
         env: Env,
         comentarista: Address,
-        id_texto: Symbol,
+        id_texto: IdTexto,
         autor_reflexao: Address,
         conteudo: String,
     ) {
@@ -144,7 +144,7 @@ impl ContratoBiblia {
     pub fn remover_comentario(
         env: Env,
         usuario: Address,
-        id_texto: Symbol,
+        id_texto: IdTexto,
         autor_reflexao: Address,
         indice_comentario: u32,
     ) {
@@ -155,7 +155,7 @@ impl ContratoBiblia {
     /// Retorna lista ordenada cronologicamente
     pub fn obter_comentarios(
         env: Env,
-        id_texto: Symbol,
+        id_texto: IdTexto,
         autor_reflexao: Address,
     ) -> Vec<Comentario> {
         reflexoes::obter_comentarios(env, id_texto, autor_reflexao)
@@ -165,7 +165,7 @@ impl ContratoBiblia {
     /// Usado para controle de moderação e visibilidade
     pub fn verificar_status_reflexao(
         env: Env,
-        id_texto: Symbol,
+        id_texto: IdTexto,
         autor_reflexao: Address,
     ) -> StatusReflexao {
         reflexoes::verificar_status_reflexao(env, id_texto, autor_reflexao)
