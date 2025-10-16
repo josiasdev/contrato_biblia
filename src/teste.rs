@@ -1,10 +1,14 @@
 #[cfg(test)]
 mod tests {
-    use crate::{ContratoBiblia, ContratoBibliaClient};
+    use crate::{ContratoBiblia, ContratoBibliaClient, IdTexto};
     use soroban_sdk::{
         testutils::Address as _,
-        Address, Env, String, symbol_short
+        Address, Env, String
     };
+
+    fn id_gen_1_1() -> IdTexto {
+        IdTexto { livro: 1, capitulo: 1, versiculo: 1 }
+    }
 
     #[test]
     fn test_funcionalidades_basicas() {
@@ -14,7 +18,7 @@ mod tests {
 
         let admin = Address::generate(&env);
         let leitor = Address::generate(&env);
-        let id_texto = symbol_short!("GEN_1_1");
+        let id_texto = id_gen_1_1();
         let texto = String::from_str(&env, "No princípio criou Deus os céus e a terra.");
         let hash_sha256 = env.crypto().sha256(&texto.to_bytes()).into();
 
@@ -48,7 +52,7 @@ mod tests {
         let admin = Address::generate(&env);
         let leitor = Address::generate(&env);
         let curtidor = Address::generate(&env);
-        let id_texto = symbol_short!("GEN_1_1");
+        let id_texto = id_gen_1_1();
         let texto = String::from_str(&env, "No princípio criou Deus os céus e a terra.");
         let hash_sha256 = env.crypto().sha256(&texto.to_bytes()).into();
 
@@ -93,7 +97,7 @@ mod tests {
         let admin = Address::generate(&env);
         let leitor1 = Address::generate(&env);
         let leitor2 = Address::generate(&env);
-        let id_texto = symbol_short!("GEN_1_1");
+        let id_texto = id_gen_1_1();
         let texto = String::from_str(&env, "No princípio criou Deus os céus e a terra.");
         let hash_sha256 = env.crypto().sha256(&texto.to_bytes()).into();
 
@@ -124,7 +128,7 @@ mod tests {
 
         let admin = Address::generate(&env);
         let leitor = Address::generate(&env);
-        let id_texto = symbol_short!("GEN_1_1");
+        let id_texto = id_gen_1_1();
         let texto = String::from_str(&env, "No princípio criou Deus os céus e a terra.");
         let hash_sha256 = env.crypto().sha256(&texto.to_bytes()).into();
 
@@ -157,7 +161,7 @@ mod tests {
 
         let admin = Address::generate(&env);
         let leitor = Address::generate(&env);
-        let id_texto = symbol_short!("GEN_1_1");
+        let id_texto = id_gen_1_1();
         let texto = String::from_str(&env, "No princípio criou Deus os céus e a terra.");
         let hash_sha256 = env.crypto().sha256(&texto.to_bytes()).into();
 
@@ -179,7 +183,7 @@ mod tests {
 
         let admin = Address::generate(&env);
         let leitor = Address::generate(&env);
-        let id_texto = symbol_short!("GEN_1_1");
+        let id_texto = id_gen_1_1();
         let texto = String::from_str(&env, "No princípio criou Deus os céus e a terra.");
         let hash_sha256 = env.crypto().sha256(&texto.to_bytes()).into();
 
@@ -207,7 +211,7 @@ mod tests {
 
         let admin = Address::generate(&env);
         let leitor = Address::generate(&env);
-        let id_texto = symbol_short!("GEN_1_1");
+        let id_texto = id_gen_1_1();
         let texto = String::from_str(&env, "No princípio criou Deus os céus e a terra.");
         let hash_sha256 = env.crypto().sha256(&texto.to_bytes()).into();
 
@@ -231,7 +235,7 @@ mod tests {
         let admin = Address::generate(&env);
         let leitor = Address::generate(&env);
         let comentarista = Address::generate(&env);
-        let id_texto = symbol_short!("GEN_1_1");
+        let id_texto = id_gen_1_1();
         let texto = String::from_str(&env, "No princípio criou Deus os céus e a terra.");
         let hash_sha256 = env.crypto().sha256(&texto.to_bytes()).into();
 
@@ -268,7 +272,7 @@ mod tests {
         let admin = Address::generate(&env);
         let leitor = Address::generate(&env);
         let comentarista = Address::generate(&env);
-        let id_texto = symbol_short!("GEN_1_1");
+        let id_texto = id_gen_1_1();
         let texto = String::from_str(&env, "No princípio criou Deus os céus e a terra.");
         let hash_sha256 = env.crypto().sha256(&texto.to_bytes()).into();
 
