@@ -7,8 +7,8 @@
 //! - Navegar através de reflexões de outros usuários
 //! - Remover seus próprios comentários
 
-use soroban_sdk::{Env, Address, Symbol, String, Vec, Map};
-use crate::{DataKey, Reflexao, Comentario, StatusReflexao, MAX_REFLEXAO_CHARS, MAX_COMENTARIO_CHARS};
+use soroban_sdk::{Env, Address, String, Vec, Map, Symbol};
+use crate::{DataKey, Reflexao, Comentario, StatusReflexao, IdTexto, MAX_REFLEXAO_CHARS, MAX_COMENTARIO_CHARS};
 
 /// Adiciona uma nova reflexão pessoal sobre um texto bíblico
 /// 
@@ -24,7 +24,7 @@ use crate::{DataKey, Reflexao, Comentario, StatusReflexao, MAX_REFLEXAO_CHARS, M
 pub fn adicionar_reflexao(
     env: Env,
     leitor: Address,
-    id_texto: Symbol,
+    id_texto: IdTexto,
     conteudo: String,
     publica: bool,
 ) {
@@ -41,7 +41,7 @@ pub fn adicionar_reflexao(
     }
     
     
-    let hashes: Map<Symbol, soroban_sdk::BytesN<32>> = env.storage()
+    let hashes: Map<IdTexto, soroban_sdk::BytesN<32>> = env.storage()
         .instance()
         .get(&DataKey::Hashes)
         .unwrap_or(Map::new(&env));
@@ -52,7 +52,7 @@ pub fn adicionar_reflexao(
     
    
     let key_leitura = (leitor.clone(), id_texto.clone());
-    let leituras: Map<(Address, Symbol), bool> = env.storage()
+    let leituras: Map<(Address, IdTexto), bool> = env.storage()
         .instance()
         .get(&DataKey::Leituras)
         .unwrap_or(Map::new(&env));
@@ -109,7 +109,7 @@ pub fn adicionar_reflexao(
 pub fn obter_reflexao(
     env: Env,
     leitor: Address,
-    id_texto: Symbol,
+    id_texto: IdTexto,
 ) -> Option<Reflexao> {
     let key = DataKey::Reflexoes(id_texto.clone(), leitor.clone());
     let key_status = DataKey::StatusReflexoes(id_texto, leitor);
@@ -127,7 +127,7 @@ pub fn obter_reflexao(
 
 pub fn listar_reflexoes_publicas(
     env: Env,
-    id_texto: Symbol,
+    id_texto: IdTexto,
     limite: u32,
     offset: u32,
 ) -> Vec<Reflexao> {
@@ -174,7 +174,7 @@ pub fn listar_reflexoes_publicas(
 pub fn curtir_reflexao(
     env: Env,
     curtidor: Address,
-    id_texto: Symbol,
+    id_texto: IdTexto,
     autor_reflexao: Address,
 ) {
     curtidor.require_auth();
@@ -224,7 +224,7 @@ pub fn curtir_reflexao(
 pub fn comentar_reflexao(
     env: Env,
     comentarista: Address,
-    id_texto: Symbol,
+    id_texto: IdTexto,
     autor_reflexao: Address,
     conteudo: String,
 ) {
@@ -281,7 +281,7 @@ pub fn comentar_reflexao(
 /// conteúdo inadequado sem perder os dados permanentemente.
 pub fn obter_comentarios(
     env: Env,
-    id_texto: Symbol,
+    id_texto: IdTexto,
     autor_reflexao: Address,
 ) -> Vec<Comentario> {
     let key_comentarios = DataKey::ComentariosReflexao(id_texto, autor_reflexao);
@@ -297,7 +297,7 @@ pub fn obter_comentarios(
 /// conteúdo inadequado sem perder os dados permanentemente.
 pub fn verificar_status_reflexao(
     env: Env,
-    id_texto: Symbol,
+    id_texto: IdTexto,
     autor_reflexao: Address,
 ) -> StatusReflexao {
     let key_status = DataKey::StatusReflexoes(id_texto, autor_reflexao);
@@ -315,7 +315,7 @@ pub fn verificar_status_reflexao(
 pub fn remover_comentario(
     env: Env,
     usuario: Address,
-    id_texto: Symbol,
+    id_texto: IdTexto,
     autor_reflexao: Address,
     indice_comentario: u32,
 ) {
