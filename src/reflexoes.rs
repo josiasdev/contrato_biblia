@@ -7,7 +7,7 @@
 //! - Navegar através de reflexões de outros usuários
 //! - Remover seus próprios comentários
 
-use soroban_sdk::{Env, Address, String, Vec, Map, Symbol};
+use soroban_sdk::{Env, Address, String, Vec, Map};
 use crate::{DataKey, Reflexao, Comentario, StatusReflexao, IdTexto, MAX_REFLEXAO_CHARS, MAX_COMENTARIO_CHARS};
 
 /// Adiciona uma nova reflexão pessoal sobre um texto bíblico
