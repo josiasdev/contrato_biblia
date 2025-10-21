@@ -201,6 +201,36 @@ impl ContratoBiblia {
         let key = DataKey::MetaVersiculosLivro(livro_id);
         env.storage().persistent().set(&key, &total_versiculos);
     }
+
+    pub fn reivindicar_recompensa_livro(env: Env, leitor: Address, livro_id: u32) {
+        leitor.require_auth();
+
+        let key_recompensa = DataKey::RecompensaRecebida(leitor.clone(), livro_id);
+        if env.storage().persistent().has(&key_recompensa) {
+            panic!("Recompensa por este livro já foi recebida!");
+        }
+
+        let key_progresso = DataKey::ProgressoLeitura(leitor.clone(), livro_id);
+        let progresso_atual: u32 = env.storage().persistent().get(&key_progresso).unwrap_or(0);
+
+        let key_meta = DataKey::MetaVersiculosLivro(livro_id);
+        let meta_total: u32 = env.storage().persistent().get(&key_meta)
+            .expect("Meta para este livro não foi definida pelo admin");
+
+        if progresso_atual < meta_total {
+            panic!("Livro ainda não concluído. Continue lendo!");
+        }
+
+        env.storage().persistent().set(&key_recompensa, &true);
+
+
+        let recompensa_em_tokens: u128 = 100_0000000;
+
+
+        env.events().publish(
+            (symbol_short!("recompensa"),), // Tópico (um Symbol)
+            (leitor, livro_id, recompensa_em_tokens) // Dados (uma Tupla)
+        );
 }
 
 #[cfg(test)]
