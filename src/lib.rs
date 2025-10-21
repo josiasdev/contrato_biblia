@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, Env, Address, Map, BytesN, String, Vec};
+use soroban_sdk::{contract, contractimpl, contracttype, Env, Address, Map, BytesN, String, Vec, Symbol};
 use core::cmp::Ordering;
 
 mod types;
@@ -31,7 +31,7 @@ pub struct ContratoBiblia;
 #[contractimpl]
 impl ContratoBiblia {
     pub fn initialize(env: Env, admin: Address) {
-        if env.storage().instance().has(&DataKey::Admin){
+        if env.storage().instance().has(&DataKey::Admin) {
             panic!("Contrato já inicializado");
         }
         env.storage().instance().set(&DataKey::Admin, &admin);
@@ -82,15 +82,13 @@ impl ContratoBiblia {
         } else {
             String::from_str(&env, "Este versículo já foi marcado como lido.");
         }
-
-
     }
 
     pub fn verificar_leitura(env: Env, leitor: Address, id_texto: IdTexto) -> String {
         let leituras: Map<(Address, IdTexto), bool> = env.storage().instance()
             .get(&DataKey::Leituras)
             .unwrap_or_else(|| Map::new(&env));
-        if let Some(true) = leituras.get((leitor, id_texto)){
+        if let Some(true) = leituras.get((leitor, id_texto)) {
             String::from_str(&env, "Leitura confirmada!")
         } else {
             String::from_str(&env, "Registro de leitura não encontrado.")
@@ -194,7 +192,7 @@ impl ContratoBiblia {
 
     /// (Admin) Define o número total de versículos de um livro.
     /// Ex: livro 1 (Gênesis) tem 1533 versículos.
-    pub fn registrar_meta_livro(env: Env, livro_id: u32, total_versiculos: u32){
+    pub fn registrar_meta_livro(env: Env, livro_id: u32, total_versiculos: u32) {
         let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         admin.require_auth();
 
@@ -228,9 +226,10 @@ impl ContratoBiblia {
 
 
         env.events().publish(
-            (symbol_short!("recompensa"),), // Tópico (um Symbol)
-            (leitor, livro_id, recompensa_em_tokens) // Dados (uma Tupla)
+            (Symbol::new(&env, "recompensa"),),
+            (leitor, livro_id, recompensa_em_tokens)
         );
+    }
 }
 
 #[cfg(test)]
