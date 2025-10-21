@@ -173,6 +173,17 @@ impl ContratoBiblia {
     ) -> StatusReflexao {
         reflexoes::verificar_status_reflexao(env, id_texto, autor_reflexao)
     }
+
+
+    /// (Admin) Define o número total de versículos de um livro.
+    /// Ex: livro 1 (Gênesis) tem 1533 versículos.
+    pub fn registrar_meta_livro(env: Env, livro_id: u32, total_versiculos: u32){
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
+        admin.require_auth();
+
+        let key = DataKey::MetaVersiculosLivro(livro_id);
+        env.storage().persistent().set(&key, &total_versiculos);
+    }
 }
 
 #[cfg(test)]
