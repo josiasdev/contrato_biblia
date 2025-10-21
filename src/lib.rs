@@ -14,6 +14,9 @@ pub enum DataKey {
     Admin, //  Chave para o endereço do administrador
     Hashes, // Chave para o mapa de hashes dos textos (Map<IdTexto, BytesN<32>>)
     Leituras, // Chave para o mapa de leituras Map será Map<(Address, IdTexto), bool>
+    MetaVersiculosLivro(u32), // (Admin) Armazena o total de versículos de um livro (ex: Livro 1 -> 1533)
+    ProgressoLeitura(Address, u32), // (Usuário) Conta quantos versículos um leitor leu de um livro (ex: (Josias, Livro 1) -> 500)
+    RecompensaRecebida(Address, u32), // (Sistema) Marca se um leitor JÁ recebeu a recompensa por um livro (ex: (Josias, Livro 1) -> true)
     Reflexoes(IdTexto, Address),
     ContadorReflexoes(IdTexto),
     ReflexoesPublicas(IdTexto, u32),
