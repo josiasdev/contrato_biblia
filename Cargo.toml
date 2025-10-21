@@ -1,6 +1,6 @@
  [package]
 name = "contrato_biblia"
-version = "0.2.0"
+version = "1.0.0"
 edition = "2021"
 publish = true
 authors = ["Josias Batista <francisco.batista67@alu.ufc.br>"]
