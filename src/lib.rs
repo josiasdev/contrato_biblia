@@ -63,10 +63,27 @@ impl ContratoBiblia {
 
     pub fn marcar_lido(env: Env, leitor: Address, id_texto: IdTexto) {
         leitor.require_auth();
+
+        let key_leitura = (leitor.clone(), id_texto.clone());
+
         let mut leituras: Map<(Address, IdTexto), bool> = env.storage().instance().get(&DataKey::Leituras).unwrap_or_else(|| Map::new(&env));
 
-        leituras.set((leitor, id_texto), true);
-        env.storage().instance().set(&DataKey::Leituras, &leituras);
+        if !leituras.get(key_leitura.clone()).unwrap_or(false) {
+            leituras.set(key_leitura, true);
+            env.storage().instance().set(&DataKey::Leituras, &leituras);
+
+            let livro_id = id_texto.livro;
+            let key_progresso = DataKey::ProgressoLeitura(leitor.clone(), livro_id);
+
+            let mut progresso_atual: u32 = env.storage().persistent().get(&key_progresso).unwrap_or(0);
+            progresso_atual += 1;
+            env.storage().persistent().set(&key_progresso, &progresso_atual);
+            String::from_str(&env, "Leitura registrada e progresso atualizado!");
+        } else {
+            String::from_str(&env, "Este versículo já foi marcado como lido.");
+        }
+
+
     }
 
     pub fn verificar_leitura(env: Env, leitor: Address, id_texto: IdTexto) -> String {
