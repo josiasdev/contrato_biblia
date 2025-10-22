@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, Env, Address, Map, BytesN, String, Vec, Symbol};
+use soroban_sdk::{contract, contractimpl, contracttype, contractevent, Env, Address, Map, BytesN, String, Vec, Symbol};
 use core::cmp::Ordering;
 
 mod types;
@@ -7,6 +7,13 @@ mod reflexoes;
 
 pub use types::*;
 pub use reflexoes::*;
+
+#[contractevent]
+struct RecompensaReivindicada {
+    leitor: Address,
+    livro_id: u32,
+    valor: u128,
+}
 
 #[contracttype]
 #[derive(Clone)]
@@ -225,9 +232,13 @@ impl ContratoBiblia {
         let recompensa_em_tokens: u128 = 100_0000000;
 
 
-        env.events().publish(
-            (Symbol::new(&env, "recompensa"),),
-            (leitor, livro_id, recompensa_em_tokens)
+        RecompensaReivindicada::publish(
+            &env,
+            RecompensaReivindicada {
+                leitor: leitor,
+                livro_id: livro_id,
+                valor: recompensa_em_tokens,
+            }
         );
     }
 }
