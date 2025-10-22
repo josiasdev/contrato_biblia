@@ -19,6 +19,7 @@ Uma biblioteca Rust para um smart contract na blockchain Stellar (Soroban) focad
 
 ✅ **Autenticidade de Textos**: Verificação da integridade de textos bíblicos usando hashes SHA-256. <br>
 ✅ **Prova de Leitura**: Sistema de registro de progresso de leitura na blockchain. <br>
+✅ **Sistema de Recompensas**: Rastreia o progresso de leitura e emite eventos (via backend) para a distribuição de tokens (TAL) quando um livro é concluído. <br>
 ✅ **Reflexões Pessoais**: Usuários podem escrever e armazenar reflexões (públicas ou privadas) sobre passagens. <br>
 ✅ **Engajamento Social**: Sistema de curtidas e comentários para promover a interação comunitária. <br>
 ✅ **Gerenciamento de Comentários**: Usuários podem adicionar e remover seus próprios comentários. <br>
@@ -105,6 +106,12 @@ stellar contract invoke \
 
 ## Exemplos de Invocação de Funções
 
+**Nota Importante:** Este contrato usa uma `struct` `IdTexto` para identificar versículos. Ao invocar pela CLI, devemos passar um JSON.
+```bash
+# Helper: JSON para Gênesis 1:1 (Livro 1, Cap 1, Verso 1)
+ID_TEXTO_JSON='{"livro":1,"capitulo":1,"versiculo":1}'
+```
+
 ### Registrando o Hash de um Versículo (Apenas Admin)
 
 O administrador pode registrar o hash de Gênesis 1:1.
@@ -119,7 +126,7 @@ stellar contract invoke \
   --network futurenet \
   -- \
   registrar_hash \
-  --id_texto GEN_1_1 \
+  --id_texto $ID_TEXTO_JSON \
   --hash $HASH_GEN_1_1
 ```
 
@@ -145,8 +152,10 @@ stellar contract invoke \
   -- \
   marcar_lido \
   -- leitor $LEITOR_ADDRESS \
-  --id_texto GEN_1_1
+  --id_texto $ID_TEXTO_JSON
 ```
+
+O resultado esperado é: `"Leitura registrada e progresso atualizado!"`
 
 ### Verificando a Leitura de um Usuário
 
@@ -163,7 +172,7 @@ stellar contract invoke \
   -- \
   verificar_leitura \
   --leitor $LEITOR_ADDRESS \
-  --id_texto GEN_1_1
+  --id_texto $ID_TEXTO_JSON
 ```
 
 O resultado esperado no terminal será uma `String` descritiva:
@@ -189,7 +198,7 @@ stellar contract invoke \
   -- \
   adicionar_reflexao \
   --leitor $LEITOR_ADDRESS \
-  --id_texto GEN_1_1 \
+  --id_texto $ID_TEXTO_JSON \
   --conteudo "Esta passagem é a base de tudo." \
   --publica true
 ```
@@ -211,7 +220,7 @@ stellar contract invoke \
   -- \
   curtir_reflexao \
   --curtidor $(stellar keys address leitora_ana) \
-  --id_texto GEN_1_1 \
+  --id_texto $ID_TEXTO_JSON \
   --autor_reflexao $LEITOR_ADDRESS
 ```
 
@@ -227,7 +236,7 @@ stellar contract invoke \
   -- \
   comentar_reflexao \
   --comentarista $(stellar keys address leitora_ana) \
-  --id_texto GEN_1_1 \
+  --id_texto $ID_TEXTO_JSON \
   --autor_reflexao $LEITOR_ADDRESS \
   --conteudo "Concordo plenamente! Ótima reflexão."
 ```
@@ -242,11 +251,49 @@ stellar contract invoke \
   --network futurenet \
   -- \
   listar_reflexoes_publicas \
-  --id_texto GEN_1_1 \
+  --id_texto $ID_TEXTO_JSON \
   --limite 10 \
   --offset 0
 ```
 O resultado será um vetor (`Vec`) contendo a estrutura completa da reflexão do `leitor_josias`.
+
+---
+
+### Sistema de Recompensas (Token TAL)
+
+#### 1. (Admin) Registrar a Meta de um Livro
+
+O admin define quantos versículos um livro tem para que o contrato saiba quando a leitura foi concluída.
+
+```bash
+# Exemplo: Definindo Gênesis (livro 1) com 1533 versículos
+stellar contract invoke \
+  --id $CONTRACT_ID \
+  --source admin \
+  --network futurenet \
+  -- \
+  registrar_meta_livro \
+  --livro_id 1 \
+  --total_versiculos 1533
+```
+
+#### 2. (Usuário) Reivindicar Recompensa por Livro Concluído
+
+Após ler todos os versículos (ex: 1533 de Gênesis), o usuário chama esta função. Ela não envia o token, mas **emite um evento** que um backend off-chain deve ouvir.
+
+```bash
+stellar contract invoke \
+  --id $CONTRACT_ID \
+  --source leitor_josias \
+  --network testnet \
+  -- \
+  reivindicar_recompensa_livro \
+  --leitor $LEITOR_ADDRESS \
+  --livro_id 1
+```
+Se for bem-sucedido, a transação será concluída e o evento `RecompensaReivindicada` será emitido na blockchain para o backend processar o pagamento do token `TAL`.
+
+
 
 ## Licença
 
