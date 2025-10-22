@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, contractevent, Env, Address, Map, BytesN, String, Vec, Symbol};
+use soroban_sdk::{contract, contractimpl, contracttype, contractevent, Env, Address, Map, BytesN, String, Vec};
 use core::cmp::Ordering;
 
 mod types;
@@ -233,12 +233,11 @@ impl ContratoBiblia {
 
 
         RecompensaReivindicada::publish(
-            &env,
-            RecompensaReivindicada {
+            &RecompensaReivindicada{
                 leitor: leitor,
                 livro_id: livro_id,
-                valor: recompensa_em_tokens,
-            }
+                valor: recompensa_em_tokens
+            }, &env
         );
     }
 }
