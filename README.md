@@ -1,39 +1,42 @@
-# Contrato Bíblia (Stellar/Soroban)
+# Bible Smart Contract (Stellar/Soroban)
+
+🌐 **Languages / Idiomas:** **English** | [Português (Brasil)](README_PT_BR.md)
 
 ![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
 ![Stellar](https://img.shields.io/badge/stellar-%23000000.svg?style=for-the-badge&logo=stellar&logoColor=white)
 ![WebAssembly](https://img.shields.io/badge/webassembly-%23654FF0.svg?style=for-the-badge&logo=webassembly&logoColor=white)
 
-Uma biblioteca Rust para um smart contract na blockchain Stellar (Soroban) focado em uma aplicação social e de estudo da Bíblia Sagrada.
+A Rust smart contract library for the Stellar blockchain (Soroban) focused on a social and Bible study application.
 
+For a detailed technical guide on the architecture and development, check the [Developer Guide](docs/DEVELOPER_GUIDE.md).
 
-## Tecnologias Utilizadas
+## Technologies Used
 
-* **Linguagem:** Rust (Edição 2021)
-* **Blockchain:** Stellar (Futurenet)
-* **Plataforma de Smart Contracts:** Soroban
+* **Language:** Rust (2021 Edition)
+* **Blockchain:** Stellar (Futurenet / Testnet)
+* **Smart Contract Platform:** Soroban
 * **SDK:** `soroban-sdk`
-* **Ferramenta de Linha de Comando:** `stellar-cli`
+* **CLI Tool:** `stellar-cli`
 
-## Funcionalidades
+## Features
 
-✅ **Autenticidade de Textos**: Verificação da integridade de textos bíblicos usando hashes SHA-256. <br>
-✅ **Prova de Leitura**: Sistema de registro de progresso de leitura na blockchain. <br>
-✅ **Sistema de Recompensas**: Rastreia o progresso de leitura e emite eventos (via backend) para a distribuição de tokens (TAL) quando um livro é concluído. <br>
-✅ **Reflexões Pessoais**: Usuários podem escrever e armazenar reflexões (públicas ou privadas) sobre passagens. <br>
-✅ **Engajamento Social**: Sistema de curtidas e comentários para promover a interação comunitária. <br>
-✅ **Gerenciamento de Comentários**: Usuários podem adicionar e remover seus próprios comentários. <br>
-✅ **Moderação**: Sistema de status para gerenciamento e moderação de reflexões. <br>
-✅ **Testes Abrangentes**: Cobertura de testes unitários para todas as principais funcionalidades. <br>
-✅ **Documentação e Tipagem Segura**: Código totalmente documentado e com tipos de dados bem definidos.
+✅ **Text Authenticity**: Verification of Bible text integrity using SHA-256 hashes. <br>
+✅ **Proof of Reading**: On-chain reading progress tracking system. <br>
+✅ **Reward System**: Tracks reading progress and emits events (for off-chain backend processing) to distribute tokens (TAL) upon completing a book. <br>
+✅ **Personal Reflections**: Users can write and store public or private reflections on Bible passages. <br>
+✅ **Social Engagement**: Like and comment system to promote community interaction. <br>
+✅ **Comment Management**: Users can add and delete their own comments. <br>
+✅ **Moderation**: Status system for reflection management and moderation. <br>
+✅ **Comprehensive Tests**: High unit test coverage across all major features. <br>
+✅ **Type-Safe Documentation**: Fully documented Rust code with strongly typed structures.
 
-## Como Compilar e Usar
+## How to Build and Use
 
-Siga os passos abaixo para compilar, implantar e interagir com este contrato.
+Follow the steps below to build, deploy, and interact with this contract.
 
-### Pré-requisitos
+### Prerequisites
 
-Antes de começar, garanta que você tenha as seguintes ferramentas instaladas:
+Before getting started, make sure you have the following tools installed:
 
 * **Rust Toolchain**: [https://www.rust-lang.org/tools/install](https://www.rust-lang.org/tools/install)
 * **WASM Target**: 
@@ -46,57 +49,57 @@ rustup target add wasm32-unknown-unknown
 npm install -g stellar-cli
 ```
 
-### 1. Compilação
-Clone este repositório:
+### 1. Build
+Clone this repository:
 ```bash
 git clone https://github.com/josiasdev/contrato_biblia
 cd contrato_biblia
 ```
 
-Para compilar o contrato para WASM, execute:
+To build the smart contract to WASM, run:
 
 ```bash
 stellar contract build
 ```
 
-Este comando criará o arquivo `contrato_biblia.wasm` no diretório `target/wasm32-unknown-unknown/release/`.
+This command will produce the `contrato_biblia.wasm` binary file inside `target/wasm32-unknown-unknown/release/`.
 
-### 2. Implantação (Deploy)
+### 2. Deployment
 
-Para implantar o contrato, você precisará de uma conta na rede de testes `futurenet`.
+To deploy the contract, you will need an account on the `futurenet` test network.
 
-1.  **Crie e Funde uma Conta:**
+1.  **Create and Fund an Account:**
     ```bash
-    # Crie uma identidade como admin
+    # Create an admin identity
     stellar keys generate admin --network testnet --fund
 
-    # Obtenha o endereço público
+    # Get the public address
     ADMIN_ADDRESS=$(stellar keys address admin)
     ```
     
-    #### Use o Friendbot da Futurenet para obter XLM de teste
-    Acesse: [Friendbot: fund a futurenet network account](https://lab.stellar.org/account/fund?$=network$id=futurenet&label=Futurenet&horizonUrl=https:////horizon-futurenet.stellar.org&rpcUrl=https:////rpc-futurenet.stellar.org&passphrase=Test%20SDF%20Future%20Network%20/;%20October%202022;;)
+    #### Use Friendbot to receive test XLM
+    Visit: [Friendbot: fund a futurenet network account](https://lab.stellar.org/account/fund?$=network$id=futurenet&label=Futurenet&horizonUrl=https:////horizon-futurenet.stellar.org&rpcUrl=https:////rpc-futurenet.stellar.org&passphrase=Test%20SDF%20Future%20Network%20/;%20October%202022;;)
 
-2.  **Implante o Contrato:**
+2.  **Deploy the Contract:**
     ```bash
     stellar contract deploy \
       --wasm target/wasm32-unknown-unknown/release/contrato_biblia.wasm \
       --source-account admin \
-      --network futurenet \ --alias contrato_biblia
+      --network futurenet \
+      --alias contrato_biblia
     ```
-    Guarde o **ID do Contrato** (ex: `C...`) retornado por este comando.
+    Save the returned **Contract ID** (e.g., `C...`).
 
-### 3. Inicialização
+### 3. Initialization
 
-Após a implantação, o contrato precisa ser inicializado com o endereço do administrador.
+After deployment, the contract must be initialized with the administrator address.
 
 ```bash
-# Substitua as variáveis pelos seus valores
-ID_DO_CONTRATO="C..."
+CONTRACT_ID="C..."
 ADMIN_ADDRESS=$(stellar keys address admin) 
 
 stellar contract invoke \
-  --id $ID_DO_CONTRATO \
+  --id $CONTRACT_ID \
   --source-account admin \
   --network futurenet \
   -- \
@@ -104,25 +107,25 @@ stellar contract invoke \
   --admin $ADMIN_ADDRESS
 ```
 
-## Exemplos de Invocação de Funções
+## Function Invocation Examples
 
-**Nota Importante:** Este contrato usa uma `struct` `IdTexto` para identificar versículos. Ao invocar pela CLI, devemos passar um JSON.
+**Important Note:** This contract uses an `IdTexto` struct to identify verses. When invoking via CLI, pass parameters as JSON.
 ```bash
-# Helper: JSON para Gênesis 1:1 (Livro 1, Cap 1, Verso 1)
+# Helper: JSON for Genesis 1:1 (Book 1, Chapter 1, Verse 1)
 ID_TEXTO_JSON='{"livro":1,"capitulo":1,"versiculo":1}'
 ```
 
-### Registrando o Hash de um Versículo (Apenas Admin)
+### Registering a Verse Hash (Admin Only)
 
-O administrador pode registrar o hash de Gênesis 1:1.
+The administrator can register the official SHA-256 hash for Genesis 1:1.
 
 ```bash
-ID_DO_CONTRATO="..."
+CONTRACT_ID="..."
 HASH_GEN_1_1="f2e9a224a50ee5118533e4544253966a348003183a69620596323145f15a201b"
 
 stellar contract invoke \
-  --id $ID_DO_CONTRATO \
-  --source-account meu_admin \
+  --id $CONTRACT_ID \
+  --source-account admin \
   --network futurenet \
   -- \
   registrar_hash \
@@ -130,120 +133,110 @@ stellar contract invoke \
   --hash $HASH_GEN_1_1
 ```
 
-### Marcando um Versículo como Lido (Qualquer Usuário)
+### Marking a Verse as Read (Any User)
 
-Um usuário (com uma conta `leitor_josias` fundada) pode marcar Gênesis 1:1 como lido.
-
-```bash
-stellar keys generate leitor --network futurenet
-LEITOR_ADDRESS=$(stellar keys address leitor)
-
-```
+A funded user account (`reader`) can mark Genesis 1:1 as read.
 
 ```bash
-ID_DO_CONTRATO="..."
-LEITOR_ADDRESS=$(stellar keys address leitor)
-
+stellar keys generate reader --network futurenet
+READER_ADDRESS=$(stellar keys address reader)
 
 stellar contract invoke \
-  --id $ID_DO_CONTRATO \
-  --source leitor \
+  --id $CONTRACT_ID \
+  --source reader \
   --network futurenet \
   -- \
   marcar_lido \
-  -- leitor $LEITOR_ADDRESS \
+  --leitor $READER_ADDRESS \
   --id_texto $ID_TEXTO_JSON
 ```
 
-O resultado esperado é: `"Leitura registrada e progresso atualizado!"`
+Expected response: `"Leitura registrada e progresso atualizado!"`
 
-### Verificando a Leitura de um Usuário
+### Verifying User Reading Progress
 
-Qualquer pessoa pode verificar se `leitor` leu o versículo.
+Anyone can check if a user has read a verse.
 
 ```bash
-ID_DO_CONTRATO="..."
-LEITOR_ADDRESS=$(stellar keys address leitor)
+CONTRACT_ID="..."
+READER_ADDRESS=$(stellar keys address reader)
 
 stellar contract invoke \
-  --id $ID_DO_CONTRATO \
+  --id $CONTRACT_ID \
   --source admin \
   --network futurenet \
   -- \
   verificar_leitura \
-  --leitor $LEITOR_ADDRESS \
+  --leitor $READER_ADDRESS \
   --id_texto $ID_TEXTO_JSON
 ```
 
-O resultado esperado no terminal será uma `String` descritiva:
+Expected output:
 ```json
 "Leitura confirmada!"
 ```
-Ou, caso o registro não exista:
+Or if not read yet:
 ```json
 "Registro de leitura não encontrado."
 ```
 
-### Funções Sociais (Reflexões)
+### Social Features (Reflections)
 
-#### Adicionando uma Reflexão Pública
+#### Adding a Public Reflection
 
-O `leitor_josias` adiciona uma reflexão sobre Gênesis 1:1.
+A user adds a public reflection on Genesis 1:1.
 
 ```bash
 stellar contract invoke \
   --id $CONTRACT_ID \
-  --source leitor_josias \
+  --source reader \
   --network futurenet \
   -- \
   adicionar_reflexao \
-  --leitor $LEITOR_ADDRESS \
+  --leitor $READER_ADDRESS \
   --id_texto $ID_TEXTO_JSON \
-  --conteudo "Esta passagem é a base de tudo." \
+  --conteudo "This passage is foundational." \
   --publica true
 ```
 
-#### Curtindo uma Reflexão
+#### Liking a Reflection
 
-Um segundo usuário (`leitora_ana`) curte a reflexão do Josias.
+Another user (`reader2`) likes the reflection.
 
 ```bash
-# 1. Crie e funde a conta da 'leitora_ana'
-stellar keys generate leitora_ana --network futurenet
-# ... use o Friendbot
+stellar keys generate reader2 --network futurenet
 
-# 2. Invoque a função curtir_reflexao
 stellar contract invoke \
   --id $CONTRACT_ID \
-  --source leitora_ana \
+  --source reader2 \
   --network futurenet \
   -- \
   curtir_reflexao \
-  --curtidor $(stellar keys address leitora_ana) \
+  --curtidor $(stellar keys address reader2) \
   --id_texto $ID_TEXTO_JSON \
-  --autor_reflexao $LEITOR_ADDRESS
+  --autor_reflexao $READER_ADDRESS
 ```
 
-#### Comentando em uma Reflexão
+#### Commenting on a Reflection
 
-A `leitora_ana` também deixa um comentário.
+`reader2` leaves a comment on the reflection.
 
 ```bash
 stellar contract invoke \
   --id $CONTRACT_ID \
-  --source leitora_ana \
+  --source reader2 \
   --network futurenet \
   -- \
   comentar_reflexao \
-  --comentarista $(stellar keys address leitora_ana) \
+  --comentarista $(stellar keys address reader2) \
   --id_texto $ID_TEXTO_JSON \
-  --autor_reflexao $LEITOR_ADDRESS \
-  --conteudo "Concordo plenamente! Ótima reflexão."
+  --autor_reflexao $READER_ADDRESS \
+  --conteudo "Fully agree! Great reflection."
 ```
 
-#### Listando Reflexões Públicas
+#### Listing Public Reflections
 
-Qualquer pessoa pode listar as reflexões públicas de uma passagem (com paginação).
+Anyone can list public reflections for a passage (with pagination).
 
 ```bash
 stellar contract invoke \
@@ -255,18 +248,17 @@ stellar contract invoke \
   --limite 10 \
   --offset 0
 ```
-O resultado será um vetor (`Vec`) contendo a estrutura completa da reflexão do `leitor_josias`.
 
 ---
 
-### Sistema de Recompensas (Token TAL)
+### Reward System (TAL Token)
 
-#### 1. (Admin) Registrar a Meta de um Livro
+#### 1. (Admin) Register Book Target
 
-O admin define quantos versículos um livro tem para que o contrato saiba quando a leitura foi concluída.
+The admin sets the total number of verses in a book so the contract knows when reading is completed.
 
 ```bash
-# Exemplo: Definindo Gênesis (livro 1) com 1533 versículos
+# Example: Setting Genesis (Book 1) with 1533 verses
 stellar contract invoke \
   --id $CONTRACT_ID \
   --source admin \
@@ -277,24 +269,23 @@ stellar contract invoke \
   --total_versiculos 1533
 ```
 
-#### 2. (Usuário) Reivindicar Recompensa por Livro Concluído
+#### 2. (User) Claim Reward for Completed Book
 
-Após ler todos os versículos (ex: 1533 de Gênesis), o usuário chama esta função. Ela não envia o token, mas **emite um evento** que um backend off-chain deve ouvir.
+Upon reading all verses in a book, the user calls this function. It **emits an event** that an off-chain backend listens for to trigger token transfers.
 
 ```bash
 stellar contract invoke \
   --id $CONTRACT_ID \
-  --source leitor_josias \
+  --source reader \
   --network testnet \
   -- \
   reivindicar_recompensa_livro \
-  --leitor $LEITOR_ADDRESS \
+  --leitor $READER_ADDRESS \
   --livro_id 1
 ```
-Se for bem-sucedido, a transação será concluída e o evento `RecompensaReivindicada` será emitido na blockchain para o backend processar o pagamento do token `TAL`.
 
+Upon success, the transaction finishes and emits the `RecompensaReivindicada` event on-chain for the backend listener to process the `TAL` token distribution.
 
+## License
 
-## Licença
-
-Este projeto é distribuído sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+Distributed under the MIT License. See `LICENSE` for more information.

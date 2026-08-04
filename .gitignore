@@ -5,3 +5,6 @@
 # Remove Cargo.lock from gitignore if you are building an application,
 # but keep it for libraries
 Cargo.lock
+
+# IDE settings
+.idea/
