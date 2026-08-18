@@ -4,29 +4,45 @@
 
 Bem-vindo ao guia do desenvolvedor do **Contrato Bíblia**, um smart contract descentralizado desenvolvido para a plataforma **Stellar Soroban** em Rust.
 
-Este guia oferece uma visão técnica completa da arquitetura, estruturas de dados, modelo de armazenamento de estado, referência de métodos, testes e ciclo de implantação.
+Este guia oferece uma visão técnica completa da arquitetura, estruturas de dados, modelo de armazenamento de estado, suporte a Merkle Trees para múltiplas versões, sistema de certificados on-chain, suíte de testes e CLI de ingestão.
 
 ---
 
 ## 🏗️ Visão Geral da Arquitetura
 
-O smart contract foi escrito em Rust (`#![no_std]`) com foco na compilação WebAssembly (`wasm32v1-none`). Utiliza a biblioteca `soroban-sdk` para manipulação do estado da blockchain, criptografia, eventos e controle de autenticação.
+O smart contract foi escrito em Rust (`#![no_std]`) com foco na compilação WebAssembly (`wasm32v1-none`). Utiliza a biblioteca `soroban-sdk` (versão `23.5.3`) para manipulação do estado da blockchain, criptografia, eventos e controle de autenticação.
 
 ```
-src/
-├── lib.rs          # Ponto de entrada do contrato (ContratoBiblia), chaves de estado e interface pública
-├── types.rs        # Estruturas de dados (IdTexto, Reflexao, Comentario, Certificado, CategoriaLivro, etc.)
-├── reflexoes.rs    # Lógica de negócios para funções sociais, reflexões, curtidas e comentários
-├── certificados.rs # Mapeamento canônico dos 66 livros, verificações e emissão de certificados
-└── teste.rs        # Suíte de testes unitários e de integração utilizando utilitários Soroban
+contrato_biblia/
+├── src/
+│   ├── lib.rs          # Ponto de entrada do contrato (ContratoBiblia), Merkle Tree, chaves de estado e API pública
+│   ├── types.rs        # Estruturas de dados (VersaoBiblia, IdTexto, Reflexao, Comentario, Certificado, CategoriaLivro)
+│   ├── reflexoes.rs    # Lógica de negócios para funções sociais, reflexões, curtidas e comentários
+│   ├── certificados.rs # Mapeamento canônico dos 66 livros, verificações e emissão de certificados
+│   └── teste.rs        # Suíte de testes unitários e de integração utilizando utilitários Soroban
+├── scripts/
+│   └── ingestor/       # CLI em Rust de alta performance para geração de Merkle Trees & Merkle Proofs
+└── frontend/           # dApp Web em Next.js 16 (App Router, Tailwind v4, i18n, Seletor de Versão)
 ```
 
 ---
 
 ## 🔑 Estruturas de Dados e Tipos
 
-### 1. `CategoriaLivro` e `Testamento`
-Mapeia os 66 livros da Bíblia Sagrada (Cânon Protestante/Evangélico).
+### 1. `VersaoBiblia`
+Mapeia as versões bíblicas em Domínio Público / Open-Source suportadas:
+```rust
+pub enum VersaoBiblia {
+    ARC, // Almeida Revista e Corrigida (PT)
+    ACF, // Almeida Corrigida Fiel (PT)
+    KJV, // King James Version (EN)
+    ASV, // American Standard Version (EN)
+    RVA, // Reina Valera Antigua (ES)
+}
+```
+
+### 2. `CategoriaLivro` e `Testamento`
+Mapeia a estrutura canônica dos 66 livros da Bíblia Sagrada (Cânon Protestante/Evangélico).
 ```rust
 pub enum Testamento { Antigo, Novo }
 
@@ -44,7 +60,7 @@ pub enum CategoriaLivro {
 }
 ```
 
-### 2. `Certificado` e `TipoCertificado`
+### 3. `Certificado` e `TipoCertificado`
 Credencial Soulbound emitida on-chain com hash SHA-256 único.
 ```rust
 pub enum TipoCertificado {
@@ -82,6 +98,7 @@ pub enum DataKey {
     StatusReflexoes(IdTexto, Address),
     Certificado(Address, TipoCertificado),
     ListaCertificados(Address),
+    MerkleRoot(VersaoBiblia), // 1 Merkle Root (32 bytes) por versão inteira da Bíblia
 }
 ```
 
@@ -89,7 +106,12 @@ pub enum DataKey {
 
 ## ⚙️ Referência da API do Contrato
 
-### 1. Categorização e Certificados On-Chain
+### 1. Merkle Tree & Múltiplas Versões
+* `registrar_merkle_root_versao(env: Env, versao: VersaoBiblia, merkle_root: BytesN<32>)`
+* `obter_merkle_root_versao(env: Env, versao: VersaoBiblia) -> Option<BytesN<32>>`
+* `verificar_texto_merkle(env: Env, versao: VersaoBiblia, id_texto: IdTexto, texto: Bytes, merkle_proof: Vec<BytesN<32>>) -> bool`
+
+### 2. Categorização e Certificados On-Chain
 * `obter_categoria_livro(env: Env, livro_id: u32) -> Option<CategoriaLivro>`
 * `obter_testamento_livro(env: Env, livro_id: u32) -> Option<Testamento>`
 * `verificar_conclusao_categoria(env: Env, leitor: Address, categoria: CategoriaLivro) -> bool`
@@ -99,34 +121,41 @@ pub enum DataKey {
 
 ---
 
-## 🧪 Testes
+## 🧪 Testes Unitários (`cargo test`)
 
-Execute a suíte de testes usando a ferramenta padrão do Rust:
+Execute a suíte de testes usando o Cargo:
 
 ```bash
 cargo test
 ```
 
-### Principais Cenários Testados:
-- `test_funcionalidades_basicas`: Inicialização, hashes e leitura.
+### Cenários Testados (8/8 aprovados):
+- `test_funcionalidades_basicas`: Inicialização, hashes e prova de leitura.
+- `test_merkle_root_versao`: Registro de Merkle Root e verificação de prova criptográfica (Merkle Proof).
 - `test_categorizacao_livros`: Validação das categorias canônicas (Pentateuco, Evangelhos, etc.).
 - `test_emissao_certificado_livro` & `test_emissao_certificado_categoria`: Emissão de certificados após 100% de leitura.
 - `test_certificado_sem_conclusao_should_panic`: Bloqueio de emissão indevida.
 - `test_certificado_duplicado_should_panic`: Prevenção de duplicidade.
+- `test_reflexoes_completo`: Teste integrado de rede social (reflexões, curtidas e comentários).
 
 ---
 
-## 🚀 Compilação e Implantação
+## 🚀 CLI em Rust de Ingestão (`scripts/ingestor`)
+
+O projeto inclui uma ferramenta CLI em Rust de alta performance para carregar textos em Domínio Público e construir as árvores de Merkle:
+
+```bash
+cargo run --manifest-path scripts/ingestor/Cargo.toml
+```
+
+Os arquivos JSON com as raízes e provas criptográficas são gerados automaticamente na pasta `scripts/ingestor/output/`.
+
+---
+
+## 📦 Compilação WASM
 
 ```bash
 stellar contract build
 ```
 
-Implantar na Futurenet:
-```bash
-stellar contract deploy \
-  --wasm target/wasm32v1-none/release/contrato_biblia.wasm \
-  --source-account admin \
-  --network futurenet \
-  --alias contrato_biblia
-```
+O binário otimizado `target/wasm32v1-none/release/contrato_biblia.wasm` será gerado com 24 funções exportadas.
