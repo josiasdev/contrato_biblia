@@ -9,7 +9,8 @@ import {
   MessageSquare, 
   Sparkles,
   Lock,
-  Globe
+  Globe,
+  X
 } from "lucide-react";
 
 interface VerseCardProps {
@@ -136,12 +137,30 @@ export function VerseCard({
 
       {/* Reflection Modal */}
       {showReflectionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg bg-elevated p-6 rounded-2xl border border-slate-700 shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-teal-400" />
-              Refletir sobre {bookName} {chapter}:{verse}
-            </h3>
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={() => setShowReflectionModal(false)}
+        >
+          <div 
+            className="w-full max-w-lg bg-elevated p-6 rounded-2xl border border-slate-700 shadow-2xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header with Close 'X' Button */}
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-teal-400" />
+                Refletir sobre {bookName} {chapter}:{verse}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowReflectionModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors"
+                aria-label="Fechar"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
             <p className="text-xs text-slate-400 mb-4 font-mono-tech">
               Sua reflexão será armazenada permanentemente no Soroban Persistent Storage.
             </p>
