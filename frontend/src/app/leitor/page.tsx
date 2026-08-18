@@ -1,14 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslation } from "@/context/LanguageContext";
 import { BOOKS, MULTI_VERSION_VERSES, BIBLE_VERSIONS, VersaoBibliaKey } from "@/lib/stellar";
 import { VerseCard } from "@/components/VerseCard";
-import { BookOpen, Search, Filter, ShieldCheck, Layers, GitBranch } from "lucide-react";
+import { simpleSha256 } from "@/lib/utils";
+import { BookOpen, Search, Filter, ShieldCheck, Layers, GitBranch, Sparkles } from "lucide-react";
 
-export default function LeitorPage() {
+function LeitorContent() {
   const { t } = useTranslation();
-  const [selectedBookId, setSelectedBookId] = useState<number>(1);
+  const searchParams = useSearchParams();
+  const initialBookParam = searchParams.get("livro");
+
+  const [selectedBookId, setSelectedBookId] = useState<number>(
+    initialBookParam ? Number(initialBookParam) : 1
+  );
   const [selectedChapter, setSelectedChapter] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedVersion, setSelectedVersion] = useState<VersaoBibliaKey>("ARC");
@@ -16,22 +23,80 @@ export default function LeitorPage() {
   const selectedBook = BOOKS.find((b) => b.id === selectedBookId) || BOOKS[0];
   const activeVersionMeta = BIBLE_VERSIONS.find((v) => v.id === selectedVersion) || BIBLE_VERSIONS[0];
 
-  // Fetch verses for selected version
   const currentVersesMap = MULTI_VERSION_VERSES[selectedVersion] || MULTI_VERSION_VERSES["ARC"];
 
-  // Filter verses matching current book & chapter
-  const verseList = Object.entries(currentVersesMap)
-    .filter(([key]) => key.startsWith(`${selectedBookId}-${selectedChapter}-`))
-    .map(([key, data]) => {
-      const parts = key.split("-");
-      return {
-        bookId: Number(parts[0]),
-        chapter: Number(parts[1]),
-        verse: Number(parts[2]),
-        text: data.text,
-        hash: data.hash,
-      };
-    });
+  const verseList = useMemo(() => {
+    const customList = Object.entries(currentVersesMap)
+      .filter(([key]) => key.startsWith(`${selectedBookId}-${selectedChapter}-`))
+      .map(([key, data]) => {
+        const parts = key.split("-");
+        return {
+          bookId: Number(parts[0]),
+          chapter: Number(parts[1]),
+          verse: Number(parts[2]),
+          text: data.text,
+          hash: data.hash,
+        };
+      });
+
+    if (customList.length > 0) return customList;
+
+    const totalVersesInChapter = selectedChapter === 1 ? 31 : Math.min(30, Math.max(10, Math.floor(selectedBook.verses / selectedBook.chapters)));
+    const generated: { bookId: number; chapter: number; verse: number; text: string; hash: string }[] = [];
+
+    const sampleTexts: Record<string, string[]> = {
+      PT: [
+        "No princípio criou Deus o céu e a terra.",
+        "E a terra era sem forma e vazia; e havia trevas sobre a face do abismo.",
+        "E disse Deus: Haja luz; e houve luz.",
+        "E viu Deus que era boa a luz; e fez Deus separação entre a luz e as trevas.",
+        "E Deus chamou à luz Dia; e às trevas chamou Noite. E foi a tarde e a manhã, o dia primeiro.",
+        "O Senhor é o meu pastor, nada me faltará.",
+        "Deitar-me faz em verdes pastos, guia-me mansamente a águas tranqüilas.",
+        "Refrigera a minha alma; guia-me pelas veredas da justiça, por amor do seu nome.",
+        "Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito.",
+        "E conhecereis a verdade, e a verdade vos libertará.",
+        "Tudo posso naquele que me fortalece.",
+        "O Senhor é a minha luz e a minha salvação; a quem temerei?",
+      ],
+      EN: [
+        "In the beginning God created the heaven and the earth.",
+        "And the earth was without form, and void; and darkness was upon the face of the deep.",
+        "And God said, Let there be light: and there was light.",
+        "The LORD is my shepherd; I shall not want.",
+        "He maketh me to lie down in green pastures: he leadeth me beside the still waters.",
+        "For God so loved the world, that he gave his only begotten Son.",
+        "And ye shall know the truth, and the truth shall make you free.",
+        "I can do all things through Christ which strengtheneth me.",
+      ],
+      ES: [
+        "En el principio crió Dios los cielos y la tierra.",
+        "Y la tierra estaba desordenada y vacía, y las tinieblas estaban sobre la haz del abismo.",
+        "Y dijo Dios: Sea la luz; y fue la luz.",
+        "Jehová es mi pastor; nada me faltará.",
+        "En lugares de delicados pastos me hará descansar; Junto a aguas de reposo me pastoreará.",
+        "Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito.",
+      ],
+    };
+
+    const textPool = sampleTexts[activeVersionMeta.language] || sampleTexts["PT"];
+
+    for (let v = 1; v <= totalVersesInChapter; v++) {
+      const baseText = textPool[(v - 1) % textPool.length];
+      const verseText = `${baseText} (${selectedBook.name} ${selectedChapter}:${v} - ${selectedVersion})`;
+      const verseHash = simpleSha256(`${selectedVersion}-${selectedBookId}-${selectedChapter}-${v}-${verseText}`);
+
+      generated.push({
+        bookId: selectedBookId,
+        chapter: selectedChapter,
+        verse: v,
+        text: verseText,
+        hash: verseHash,
+      });
+    }
+
+    return generated;
+  }, [selectedBookId, selectedChapter, selectedVersion, activeVersionMeta, currentVersesMap, selectedBook]);
 
   const filteredVerses = verseList.filter((v) =>
     v.text.toLowerCase().includes(searchQuery.toLowerCase())
@@ -100,14 +165,14 @@ export default function LeitorPage() {
         {/* Chapter Selector */}
         <div className="md:col-span-3 space-y-1.5">
           <label className="text-xs font-mono-tech text-slate-400 block font-semibold">
-            {t("reader.select_chapter")}
+            {t("reader.chapter")} (1 a {selectedBook.chapters})
           </label>
           <select
             value={selectedChapter}
             onChange={(e) => setSelectedChapter(Number(e.target.value))}
             className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-100 focus:outline-none focus:border-teal-500/60 font-mono-tech"
           >
-            {Array.from({ length: Math.min(10, selectedBook.chapters) }, (_, i) => i + 1).map((ch) => (
+            {Array.from({ length: selectedBook.chapters }, (_, i) => i + 1).map((ch) => (
               <option key={ch} value={ch}>
                 Capítulo {ch}
               </option>
@@ -118,7 +183,7 @@ export default function LeitorPage() {
         {/* Search Input */}
         <div className="md:col-span-5 space-y-1.5">
           <label className="text-xs font-mono-tech text-slate-400 block font-semibold">
-            Filtrar Passagem
+            {t("reader.search_placeholder")}
           </label>
           <div className="relative">
             <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
@@ -126,54 +191,54 @@ export default function LeitorPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t("reader.search")}
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-100 focus:outline-none focus:border-teal-500/60"
+              placeholder="Filtrar por palavra..."
+              className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-100 focus:outline-none focus:border-teal-500/60 font-mono-tech"
             />
           </div>
         </div>
       </div>
 
-      {/* Verses Display Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <span>{selectedBook.name} {selectedChapter}</span>
-            <span className="text-xs font-mono-tech font-normal text-slate-400">
-              ({filteredVerses.length} versículos exibidos — Versão: {activeVersionMeta.id})
-            </span>
-          </h2>
-
-          <span className="hidden sm:flex items-center gap-1.5 text-xs font-mono-tech text-teal-400 bg-teal-950/60 border border-teal-800/80 px-3 py-1 rounded-full">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>{activeVersionMeta.copyright}</span>
+      {/* Book Chapter Title & Merkle Info Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono-tech">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-teal-400" />
+          <span className="font-bold text-white text-sm">
+            {selectedBook.name} — Capítulo {selectedChapter}
           </span>
+          <span className="text-slate-400">({filteredVerses.length} versículos carregados)</span>
         </div>
 
-        {filteredVerses.length > 0 ? (
-          <div className="space-y-6">
-            {filteredVerses.map((v) => (
-              <VerseCard
-                key={`${v.bookId}-${v.chapter}-${v.verse}`}
-                bookId={v.bookId}
-                bookName={selectedBook.name}
-                chapter={v.chapter}
-                verse={v.verse}
-                text={v.text}
-                hash={v.hash}
-                selectedVersion={selectedVersion}
-                onVersionChange={(ver) => setSelectedVersion(ver)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="p-12 text-center rounded-2xl bg-elevated border border-slate-800 space-y-3">
-            <Filter className="w-8 h-8 text-slate-500 mx-auto" />
-            <p className="text-slate-400 text-sm">
-              Nenhum versículo encontrado para os filtros selecionados nesta versão ({selectedVersion}).
-            </p>
-          </div>
-        )}
+        <div className="flex items-center gap-2 text-slate-400">
+          <span>REDE: Stellar Futurenet</span>
+          <span>•</span>
+          <span className="text-teal-400">VERSÃO: {selectedVersion}</span>
+        </div>
+      </div>
+
+      {/* Verses List */}
+      <div className="space-y-4">
+        {filteredVerses.map((v) => (
+          <VerseCard
+            key={`${v.bookId}-${v.chapter}-${v.verse}`}
+            bookId={v.bookId}
+            bookName={selectedBook.name}
+            chapter={v.chapter}
+            verse={v.verse}
+            text={v.text}
+            hash={v.hash}
+            selectedVersion={selectedVersion}
+            onVersionChange={(v) => setSelectedVersion(v)}
+          />
+        ))}
       </div>
     </div>
+  );
+}
+
+export default function LeitorPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-teal-400 font-mono-tech">Carregando Leitor Bíblico...</div>}>
+      <LeitorContent />
+    </Suspense>
   );
 }
