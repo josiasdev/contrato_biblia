@@ -27,6 +27,7 @@ pub fn adicionar_reflexao(
     id_texto: IdTexto,
     conteudo: String,
     publica: bool,
+    hash_midia_ipfs: Option<String>,
 ) {
     
     leitor.require_auth();
@@ -66,6 +67,15 @@ pub fn adicionar_reflexao(
     if env.storage().persistent().has(&key_reflexao) {
         panic!("Já existe uma reflexão sua para este texto");
     }
+
+    // Se a reflexao for publica e o TokenTAL estiver configurado, cobra a trava anti-spam de 1 TAL
+    if publica {
+        if let Some(token_address) = env.storage().instance().get::<DataKey, Address>(&DataKey::TokenTAL) {
+            let token_client = soroban_sdk::token::Client::new(&env, &token_address);
+            let trava_antispam: i128 = 1_0000000; // 1 TAL
+            token_client.transfer(&leitor, &env.current_contract_address(), &trava_antispam);
+        }
+    }
     
 
     let hash_conteudo = env.crypto().sha256(&conteudo.to_bytes()).into();
@@ -79,6 +89,8 @@ pub fn adicionar_reflexao(
         hash_reflexao: hash_conteudo,
         publica,
         curtidas: 0,
+        destaque: false,
+        hash_midia_ipfs,
     };
     
 
@@ -103,6 +115,46 @@ pub fn adicionar_reflexao(
             &DataKey::ContadorReflexoes(id_texto.clone()),
             &contador
         );
+    }
+}
+
+/// Promove uma reflexão pública para "Insight Teológico em Destaque"
+/// Requer que o curador possua ao menos 1 certificado emitido no contrato.
+/// Ao destacar, devolve a trava de 1 TAL + 5 TAL de bônus da tesouraria para o autor.
+pub fn marcar_reflexao_destaque(
+    env: Env,
+    curador: Address,
+    autor_reflexao: Address,
+    id_texto: IdTexto,
+) {
+    curador.require_auth();
+
+    let key_certs = DataKey::ListaCertificados(curador.clone());
+    let certs: Vec<crate::Certificado> = env.storage().persistent().get(&key_certs).unwrap_or(Vec::new(&env));
+    if certs.len() == 0 {
+        panic!("Curador precisa possuir ao menos 1 certificado para destacar reflexoes!");
+    }
+
+    let key_reflexao = DataKey::Reflexoes(id_texto.clone(), autor_reflexao.clone());
+    let mut reflexao: Reflexao = env.storage().persistent().get(&key_reflexao)
+        .expect("Reflexao nao encontrada");
+
+    if !reflexao.publica {
+        panic!("Apenas reflexoes publicas podem ser destacadas");
+    }
+
+    if reflexao.destaque {
+        panic!("Reflexao ja esta em destaque!");
+    }
+
+    reflexao.destaque = true;
+    env.storage().persistent().set(&key_reflexao, &reflexao);
+
+    // Reembolso da Trava (1 TAL) + Bônus de Curadoria (5 TAL) = 6 TAL
+    if let Some(token_address) = env.storage().instance().get::<DataKey, Address>(&DataKey::TokenTAL) {
+        let token_client = soroban_sdk::token::Client::new(&env, &token_address);
+        let bonus_destaque: i128 = 6_0000000;
+        token_client.transfer(&env.current_contract_address(), &autor_reflexao, &bonus_destaque);
     }
 }
 

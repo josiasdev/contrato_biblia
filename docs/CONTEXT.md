@@ -7,7 +7,7 @@ O **Contrato Bíblia** é um smart contract desenvolvido em Rust para a platafor
 ### Objetivos Principais:
 1. **Autenticidade de Textos via Merkle Tree**: Suportar múltiplas versões da Bíblia Sagrada em domínio público (`ARC`, `ACF`, `KJV`, `ASV`, `RVA`) armazenando 1 Merkle Root SHA-256 (32 bytes) por versão no contrato Soroban e verificando a integridade dos versículos via Merkle Proofs.
 2. **Prova de Leitura (Proof of Reading)**: Registrar de forma imutável os versículos lidos por cada usuário de forma agnóstica à versão utilizada.
-3. **Engajamento Social Descentralizado**: Permitir que leitores criem reflexões (públicas ou privadas), curtam e comentem em reflexões de outros leitores.
+3. **Rede Social Descentralizada, Curadoria & Anti-Spam (1 TAL Stake)**: Permitir que leitores criem reflexões (públicas ou privadas) com opção de mídias descentralizadas (IPFS CIDs para áudios/PDFs). Publicações públicas travam 1 TAL de caução anti-spam. Curadores com Certificados Bíblicos podem promover reflexões a **"Insight Teológico em Destaque"**, reembolsando a trava + bônus de 5 TAL.
 4. **Sistema de Recompensas On-Chain (Token TAL via SAC / SEP-41)**: Gamificar a leitura bíblica realizando a **transferência direta on-chain de 100 tokens TAL** da tesouraria do contrato para a carteira do leitor via Soroban Token Client (`soroban_sdk::token::Client`).
 5. **Categorização & Certificados On-Chain**: Categorizar os 66 livros da Bíblia Sagrada (Cânon Protestante/Evangélico) e emitir credenciais não-transferíveis (Soulbound) com hash SHA-256 único para conclusão de Livros, Categorias, Testamentos ou a Bíblia Completa.
 
@@ -24,14 +24,14 @@ contrato_biblia/
 │   ├── DEVELOPER_GUIDE.md      # Guia técnico em Inglês
 │   └── DEVELOPER_GUIDE_PT_BR.md # Guia técnico detalhado em Português
 ├── src/
-│   ├── lib.rs               # Contrato principal (ContratoBiblia), SAC Token TAL, Merkle Tree, DataKeys
+│   ├── lib.rs               # Contrato principal (ContratoBiblia), Curadoria, SAC Token TAL, Merkle Tree, DataKeys
 │   ├── types.rs             # Estruturas (VersaoBiblia, IdTexto, Reflexao, Comentario, Certificado)
-│   ├── reflexoes.rs         # Lógica de reflexões, curtidas e comentários
+│   ├── reflexoes.rs         # Lógica de reflexões, IPFS, trava anti-spam (1 TAL) e curadoria de destaque
 │   ├── certificados.rs      # Mapeamento canônico dos 66 livros e emissão de certificados
-│   └── teste.rs             # Suíte de testes unitários (9/9 aprovados)
+│   └── teste.rs             # Suíte de testes unitários (10/10 aprovados)
 ├── scripts/
 │   └── ingestor/            # CLI em Rust de alta performance para geração de Merkle Trees & Proofs
-└── frontend/                # dApp Web em Next.js 16 (App Router, Tailwind v4, i18n, Seletor de Versão)
+└── frontend/                # dApp Web em Next.js 16 (App Router, Tailwind v4, i18n, IPFS Media, Curadoria)
 ```
 
 ---
@@ -82,14 +82,23 @@ contrato_biblia/
 - `emitir_certificado(leitor: Address, tipo: TipoCertificado) -> Certificado`
 - `listar_certificados(leitor: Address) -> Vec<Certificado>`
 
+### 5. Rede Social, Mídia IPFS & Curadoria Comunitária
+- `adicionar_reflexao(leitor: Address, id_texto: IdTexto, conteudo: String, publica: bool, hash_midia_ipfs: Option<String>)` *(Trava 1 TAL anti-spam para publicações públicas)*
+- `marcar_reflexao_destaque(curador: Address, autor_reflexao: Address, id_texto: IdTexto)` *(Exige Certificado no curador; Reemboosa 1 TAL + 5 TAL bônus ao autor)*
+- `obter_reflexao(leitor: Address, id_texto: IdTexto) -> Option<Reflexao>`
+- `listar_reflexoes_publicas(id_texto: IdTexto, limite: u32, offset: u32) -> Vec<Reflexao>`
+- `curtir_reflexao(curtidor: Address, id_texto: IdTexto, autor_reflexao: Address)`
+- `comentar_reflexao(comentarista: Address, id_texto: IdTexto, autor_reflexao: Address, conteudo: String)`
+- `remover_comentario(usuario: Address, id_texto: IdTexto, autor_reflexao: Address, indice_comentario: u32)`
+
 ---
 
 ## 🛠️ Comandos de Desenvolvimento
 
 ```bash
-# Executar Testes Unitários (9/9 aprovados)
+# Executar Testes Unitários (10/10 aprovados)
 cargo test
 
-# Compilar Contrato para WebAssembly (26 funções exportadas)
+# Compilar Contrato para WebAssembly (27 funções exportadas)
 stellar contract build
 ```

@@ -66,6 +66,8 @@ pub struct Reflexao {
     pub hash_reflexao: BytesN<32>,
     pub publica: bool,
     pub curtidas: u32,
+    pub destaque: bool,
+    pub hash_midia_ipfs: Option<String>,
 }
 
 /// Estrutura para comentários em reflexões públicas

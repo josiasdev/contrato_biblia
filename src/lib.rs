@@ -108,15 +108,26 @@ impl ContratoBiblia {
         }
     }
 
-    // Permite que os usuários adicionarem reflexões pessoais sobre textos bíblicos
+    // Permite que os usuários adicionem reflexões pessoais sobre textos bíblicos (com opção de mídia IPFS)
     pub fn adicionar_reflexao(
         env: Env,
         leitor: Address,
         id_texto: IdTexto,
         conteudo: String,
         publica: bool,
+        hash_midia_ipfs: Option<String>,
     ) {
-        reflexoes::adicionar_reflexao(env, leitor, id_texto, conteudo, publica)
+        reflexoes::adicionar_reflexao(env, leitor, id_texto, conteudo, publica, hash_midia_ipfs)
+    }
+
+    /// Promove uma reflexão pública para "Insight Teológico em Destaque" (Requer Curador Certificado)
+    pub fn marcar_reflexao_destaque(
+        env: Env,
+        curador: Address,
+        autor_reflexao: Address,
+        id_texto: IdTexto,
+    ) {
+        reflexoes::marcar_reflexao_destaque(env, curador, autor_reflexao, id_texto)
     }
 
     pub fn obter_reflexao(

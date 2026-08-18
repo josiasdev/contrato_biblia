@@ -12,8 +12,8 @@ import {
   Lock,
   Globe,
   X,
-  Layers,
-  GitBranch
+  GitBranch,
+  Radio
 } from "lucide-react";
 
 interface VerseCardProps {
@@ -25,7 +25,7 @@ interface VerseCardProps {
   hash: string;
   selectedVersion?: VersaoBibliaKey;
   onVersionChange?: (version: VersaoBibliaKey) => void;
-  onAddReflection?: (conteudo: string, publica: boolean) => void;
+  onAddReflection?: (conteudo: string, publica: boolean, ipfsHash?: string) => void;
 }
 
 export function VerseCard({
@@ -47,6 +47,7 @@ export function VerseCard({
   const [isMarking, setIsMarking] = useState(false);
   const [showReflectionModal, setShowReflectionModal] = useState(false);
   const [reflectionText, setReflectionText] = useState("");
+  const [ipfsCid, setIpfsCid] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [showHash, setShowHash] = useState(false);
 
@@ -61,9 +62,10 @@ export function VerseCard({
   const handleSaveReflection = () => {
     if (!reflectionText.trim()) return;
     if (onAddReflection) {
-      onAddReflection(reflectionText, isPublic);
+      onAddReflection(reflectionText, isPublic, ipfsCid.trim() || undefined);
     }
     setReflectionText("");
+    setIpfsCid("");
     setShowReflectionModal(false);
   };
 
@@ -170,7 +172,7 @@ export function VerseCard({
                 ? "bg-slate-900 hover:bg-slate-800 border-slate-700 text-teal-300 hover:border-teal-500/40"
                 : "bg-slate-900/50 border-slate-800 text-slate-500 cursor-not-allowed"
             }`}
-            title={!isRead ? "Requer Prova de Leitura anterior" : "Escrever reflexão"}
+            title={!isRead ? "Requer Prova de Leitura anterior" : "Escrever reflexão com mídia IPFS"}
           >
             <MessageSquare className="w-3.5 h-3.5" />
             <span>{t("reader.write_reflection")}</span>
@@ -203,7 +205,7 @@ export function VerseCard({
             </div>
 
             <p className="text-xs text-slate-400 mb-4 font-mono-tech">
-              Sua reflexão será armazenada permanentemente no Soroban Persistent Storage.
+              Sua reflexão será armazenada no Soroban Storage. {isPublic ? "Publicação exige 1 TAL de trava anti-spam (reembolsável se destacada)." : ""}
             </p>
 
             <textarea
@@ -212,8 +214,24 @@ export function VerseCard({
               maxLength={500}
               rows={4}
               placeholder="Escreva seus pensamentos ou insights espirituais sobre este versículo..."
-              className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-100 focus:outline-none focus:border-teal-500/60 mb-2"
+              className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-100 focus:outline-none focus:border-teal-500/60 mb-3"
             />
+
+            {/* IPFS Hash CID optional field */}
+            <div className="mb-4 space-y-1">
+              <label className="text-xs font-mono-tech text-slate-400 flex items-center gap-1.5">
+                <Radio className="w-3.5 h-3.5 text-teal-400" />
+                <span>Link IPFS / Arweave de Áudio ou PDF de Estudo (Opcional):</span>
+              </label>
+              <input
+                type="text"
+                value={ipfsCid}
+                onChange={(e) => setIpfsCid(e.target.value)}
+                placeholder="Ex: QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco"
+                className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono-tech text-teal-300 focus:outline-none focus:border-teal-500/60"
+              />
+            </div>
+
             <div className="flex items-center justify-between text-xs text-slate-400 mb-6">
               <span className="font-mono-tech">{reflectionText.length}/500 caracteres</span>
               <button
@@ -222,7 +240,7 @@ export function VerseCard({
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-teal-300"
               >
                 {isPublic ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
-                <span>{isPublic ? "Pública (Comunidade)" : "Privada (Apenas para mim)"}</span>
+                <span>{isPublic ? "Pública (Comunidade - 1 TAL Stake)" : "Privada (Apenas para mim)"}</span>
               </button>
             </div>
 

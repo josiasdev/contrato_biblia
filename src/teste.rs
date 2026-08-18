@@ -185,7 +185,7 @@ mod tests {
         client.marcar_lido(&leitor, &id_texto);
 
         let reflexao_conteudo = String::from_str(&env, "Esta passagem me faz refletir sobre...");
-        client.adicionar_reflexao(&leitor, &id_texto, &reflexao_conteudo, &true);
+        client.adicionar_reflexao(&leitor, &id_texto, &reflexao_conteudo, &true, &None);
 
         let reflexao = client.obter_reflexao(&leitor, &id_texto);
         assert!(reflexao.is_some());
@@ -305,5 +305,45 @@ mod tests {
         assert_eq!(token_client.balance(&leitor), 100_0000000);
         // Verificar que a tesouraria do contrato ficou com 900 TAL
         assert_eq!(token_client.balance(&contract_id), 900_0000000);
+    }
+
+    #[test]
+    fn test_curadoria_destaque_com_certificado() {
+        let env = Env::default();
+        let contract_id = env.register(ContratoBiblia, ());
+        let client = ContratoBibliaClient::new(&env, &contract_id);
+
+        let admin = Address::generate(&env);
+        let autor = Address::generate(&env);
+        let curador = Address::generate(&env);
+        env.mock_all_auths();
+        client.initialize(&admin);
+
+        let id_texto = id_gen_1_1();
+        let texto = String::from_str(&env, "No princípio criou Deus os céus e a terra.");
+        let hash_sha256 = env.crypto().sha256(&texto.to_bytes()).into();
+
+        client.registrar_hash(&id_texto, &hash_sha256);
+        client.marcar_lido(&autor, &id_texto);
+
+        // Autor cria uma reflexão pública com CID IPFS de áudio
+        let ipfs_cid = String::from_str(&env, "QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco");
+        let conteudo = String::from_str(&env, "Estudo em áudio sobre a criação divina.");
+        client.adicionar_reflexao(&autor, &id_texto, &conteudo, &true, &Some(ipfs_cid.clone()));
+
+        let reflexao_inicial = client.obter_reflexao(&autor, &id_texto).unwrap();
+        assert_eq!(reflexao_inicial.hash_midia_ipfs, Some(ipfs_cid));
+        assert!(!reflexao_inicial.destaque);
+
+        // Curador conquista 1 certificado (Livro 66)
+        client.registrar_meta_livro(&66, &1);
+        client.marcar_lido(&curador, &IdTexto { livro: 66, capitulo: 1, versiculo: 1 });
+        client.emitir_certificado(&curador, &TipoCertificado::Livro(66));
+
+        // Curador promove a reflexão do autor para "Insight Teológico em Destaque"
+        client.marcar_reflexao_destaque(&curador, &autor, &id_texto);
+
+        let reflexao_destacada = client.obter_reflexao(&autor, &id_texto).unwrap();
+        assert!(reflexao_destacada.destaque);
     }
 }
