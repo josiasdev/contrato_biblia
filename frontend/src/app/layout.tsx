@@ -3,6 +3,7 @@ import "./globals.css";
 import { WalletProvider } from "@/context/WalletContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { Navbar } from "@/components/Navbar";
+import { BottomNav } from "@/components/BottomNav";
 
 export const metadata: Metadata = {
   title: "Contrato Bíblia | Stellar Soroban Smart Contract dApp",
@@ -29,11 +30,11 @@ export default function RootLayout({
         <LanguageProvider>
           <WalletProvider>
             <Navbar />
-            <main className="flex-1 max-w-7xl w-full mx-auto px-6 md:px-8 py-8">
+            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8 pb-24 md:pb-8">
               {children}
             </main>
-            <footer className="border-t border-slate-800 bg-[#0b1324] py-8 text-center text-xs text-slate-400 font-mono-tech">
-              <div className="max-w-7xl mx-auto px-6 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <footer className="border-t border-slate-800 bg-[#0b1324] py-8 pb-24 md:pb-8 text-center text-xs text-slate-400 font-mono-tech">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-slate-200">Bible Contract (Soroban)</span>
                   <span>•</span>
@@ -42,6 +43,7 @@ export default function RootLayout({
                 <p>© 2026 Josias Batista. MIT License.</p>
               </div>
             </footer>
+            <BottomNav />
           </WalletProvider>
         </LanguageProvider>
       </body>
