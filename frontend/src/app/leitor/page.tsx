@@ -2,60 +2,49 @@
 
 import { useState } from "react";
 import { useTranslation } from "@/context/LanguageContext";
-import { BOOKS } from "@/lib/stellar";
+import { BOOKS, MULTI_VERSION_VERSES, BIBLE_VERSIONS, VersaoBibliaKey } from "@/lib/stellar";
 import { VerseCard } from "@/components/VerseCard";
-import { BookOpen, Search, ShieldCheck } from "lucide-react";
+import { BookOpen, Search, Filter, ShieldCheck, Layers, GitBranch } from "lucide-react";
 
 export default function LeitorPage() {
   const { t } = useTranslation();
   const [selectedBookId, setSelectedBookId] = useState<number>(1);
   const [selectedChapter, setSelectedChapter] = useState<number>(1);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedVersion, setSelectedVersion] = useState<VersaoBibliaKey>("ARC");
 
-  const currentBook = BOOKS.find((b) => b.id === selectedBookId) || BOOKS[0];
+  const selectedBook = BOOKS.find((b) => b.id === selectedBookId) || BOOKS[0];
+  const activeVersionMeta = BIBLE_VERSIONS.find((v) => v.id === selectedVersion) || BIBLE_VERSIONS[0];
 
-  const getVersesForChapter = () => {
-    return [
-      {
-        verse: 1,
-        text: "No princípio criou Deus o céu e a terra.",
-        hash: "f2e9a224a50ee5118533e4544253966a348003183a69620596323145f15a201b",
-      },
-      {
-        verse: 2,
-        text: "E a terra era sem forma e vazia; e havia trevas sobre a face do abismo; e o Espírito de Deus se movia sobre a face das águas.",
-        hash: "a4c28f0909e75525b6826d7cf5a9163e778a876a349b109e9921b790d0b00511",
-      },
-      {
-        verse: 3,
-        text: "E disse Deus: Haja luz; e houve luz.",
-        hash: "c7964b46e336d3c01c05d76d491563f91040f7b0559798031c26f04128f115a3",
-      },
-      {
-        verse: 4,
-        text: "E viu Deus que era boa a luz; e fez Deus separação entre a luz e as trevas.",
-        hash: "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
-      },
-      {
-        verse: 5,
-        text: "E Deus chamou à luz Dia; e às trevas chamou Noite. E foi a tarde e a manhã, o dia primeiro.",
-        hash: "82a84f4b963c4e1358b68832a846175e119426f8d388902506e78cf9f2d655f4",
-      },
-    ];
-  };
+  // Fetch verses for selected version
+  const currentVersesMap = MULTI_VERSION_VERSES[selectedVersion] || MULTI_VERSION_VERSES["ARC"];
 
-  const verses = getVersesForChapter().filter((v) =>
-    v.text.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter verses matching current book & chapter
+  const verseList = Object.entries(currentVersesMap)
+    .filter(([key]) => key.startsWith(`${selectedBookId}-${selectedChapter}-`))
+    .map(([key, data]) => {
+      const parts = key.split("-");
+      return {
+        bookId: Number(parts[0]),
+        chapter: Number(parts[1]),
+        verse: Number(parts[2]),
+        text: data.text,
+        hash: data.hash,
+      };
+    });
+
+  const filteredVerses = verseList.filter((v) =>
+    v.text.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-mono-tech font-semibold mb-2">
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Leitor Bíblico Soroban</span>
+            <span>Múltiplas Versões & Merkle Tree On-Chain</span>
           </div>
           <h1 className="text-3xl font-extrabold text-white">{t("reader.title")}</h1>
           <p className="text-sm text-slate-400">
@@ -63,101 +52,127 @@ export default function LeitorPage() {
           </p>
         </div>
 
-        {/* Search */}
-        <div className="relative w-full md:w-72">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder={t("reader.search")}
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono-tech text-slate-100 focus:outline-none focus:border-teal-500/50"
-          />
+        {/* Global Version Selector */}
+        <div className="glass-panel-teal p-3.5 rounded-2xl border border-teal-500/40 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-teal-500 text-slate-950 flex items-center justify-center font-bold">
+            <GitBranch className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-[10px] text-slate-400 font-mono-tech block uppercase">Versão Ativa</span>
+            <select
+              value={selectedVersion}
+              onChange={(e) => setSelectedVersion(e.target.value as VersaoBibliaKey)}
+              className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs font-mono-tech font-bold text-teal-400 focus:outline-none"
+            >
+              {BIBLE_VERSIONS.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Book and Chapter Selectors */}
-      <div className="bg-elevated p-4 sm:p-6 rounded-2xl border border-slate-800 space-y-4">
-        {/* Book Tabs */}
-        <div>
-          <label className="text-xs font-mono-tech font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+      {/* Book & Chapter Selectors & Search Bar */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 p-6 rounded-2xl bg-elevated border border-slate-800">
+        {/* Book Selector */}
+        <div className="md:col-span-4 space-y-1.5">
+          <label className="text-xs font-mono-tech text-slate-400 block font-semibold">
             {t("reader.select_book")}
           </label>
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {BOOKS.map((book) => (
-              <button
-                key={book.id}
-                onClick={() => {
-                  setSelectedBookId(book.id);
-                  setSelectedChapter(1);
-                }}
-                className={`px-4 py-2 rounded-xl text-xs font-mono-tech font-semibold shrink-0 transition-all ${
-                  selectedBookId === book.id
-                    ? "bg-teal-500 text-slate-950 shadow-md shadow-teal-500/20"
-                    : "bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
-                }`}
-              >
-                {book.name} ({book.testament})
-              </button>
+          <select
+            value={selectedBookId}
+            onChange={(e) => {
+              setSelectedBookId(Number(e.target.value));
+              setSelectedChapter(1);
+            }}
+            className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-100 focus:outline-none focus:border-teal-500/60 font-mono-tech"
+          >
+            {BOOKS.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name} ({b.testament === "AT" ? "AT" : "NT"})
+              </option>
             ))}
-          </div>
+          </select>
         </div>
 
         {/* Chapter Selector */}
-        <div>
-          <label className="text-xs font-mono-tech font-semibold text-slate-400 uppercase tracking-wider block mb-2">
-            {t("reader.select_chapter")} ({currentBook.chapters} capítulos)
+        <div className="md:col-span-3 space-y-1.5">
+          <label className="text-xs font-mono-tech text-slate-400 block font-semibold">
+            {t("reader.select_chapter")}
           </label>
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-2">
-            {Array.from({ length: Math.min(20, currentBook.chapters) }, (_, i) => i + 1).map((ch) => (
-              <button
-                key={ch}
-                onClick={() => setSelectedChapter(ch)}
-                className={`w-9 h-9 rounded-xl text-xs font-mono-tech font-bold shrink-0 transition-all ${
-                  selectedChapter === ch
-                    ? "bg-teal-600 text-white border border-teal-400"
-                    : "bg-slate-950 text-slate-400 hover:bg-slate-800 border border-slate-800"
-                }`}
-              >
-                {ch}
-              </button>
+          <select
+            value={selectedChapter}
+            onChange={(e) => setSelectedChapter(Number(e.target.value))}
+            className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-100 focus:outline-none focus:border-teal-500/60 font-mono-tech"
+          >
+            {Array.from({ length: Math.min(10, selectedBook.chapters) }, (_, i) => i + 1).map((ch) => (
+              <option key={ch} value={ch}>
+                Capítulo {ch}
+              </option>
             ))}
+          </select>
+        </div>
+
+        {/* Search Input */}
+        <div className="md:col-span-5 space-y-1.5">
+          <label className="text-xs font-mono-tech text-slate-400 block font-semibold">
+            Filtrar Passagem
+          </label>
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t("reader.search")}
+              className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-100 focus:outline-none focus:border-teal-500/60"
+            />
           </div>
         </div>
       </div>
 
-      {/* Verses List */}
-      <div className="space-y-6">
+      {/* Verses Display Section */}
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2 font-mono-tech">
-            <span>{currentBook.name} {selectedChapter}</span>
-            <span className="text-xs font-normal text-slate-400">
-              ({verses.length} versículos)
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <span>{selectedBook.name} {selectedChapter}</span>
+            <span className="text-xs font-mono-tech font-normal text-slate-400">
+              ({filteredVerses.length} versículos exibidos — Versão: {activeVersionMeta.id})
             </span>
           </h2>
 
-          <div className="flex items-center gap-2 text-xs font-mono-tech text-teal-400 font-semibold bg-teal-950/60 border border-teal-800/60 px-3 py-1 rounded-lg">
-            <ShieldCheck className="w-4 h-4" />
-            <span>{t("reader.sha_verified")}</span>
-          </div>
+          <span className="hidden sm:flex items-center gap-1.5 text-xs font-mono-tech text-teal-400 bg-teal-950/60 border border-teal-800/80 px-3 py-1 rounded-full">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>{activeVersionMeta.copyright}</span>
+          </span>
         </div>
 
-        <div className="space-y-4">
-          {verses.map((v) => (
-            <VerseCard
-              key={`${selectedBookId}-${selectedChapter}-${v.verse}`}
-              bookId={selectedBookId}
-              bookName={currentBook.name}
-              chapter={selectedChapter}
-              verse={v.verse}
-              text={v.text}
-              hash={v.hash}
-              onAddReflection={(conteudo, publica) => {
-                alert(`Reflexão gravada para ${currentBook.name} ${selectedChapter}:${v.verse}`);
-              }}
-            />
-          ))}
-        </div>
+        {filteredVerses.length > 0 ? (
+          <div className="space-y-6">
+            {filteredVerses.map((v) => (
+              <VerseCard
+                key={`${v.bookId}-${v.chapter}-${v.verse}`}
+                bookId={v.bookId}
+                bookName={selectedBook.name}
+                chapter={v.chapter}
+                verse={v.verse}
+                text={v.text}
+                hash={v.hash}
+                selectedVersion={selectedVersion}
+                onVersionChange={(ver) => setSelectedVersion(ver)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="p-12 text-center rounded-2xl bg-elevated border border-slate-800 space-y-3">
+            <Filter className="w-8 h-8 text-slate-500 mx-auto" />
+            <p className="text-slate-400 text-sm">
+              Nenhum versículo encontrado para os filtros selecionados nesta versão ({selectedVersion}).
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

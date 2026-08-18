@@ -206,4 +206,63 @@ mod tests {
         let reflexao_descurtida = client.obter_reflexao(&leitor, &id_texto).unwrap();
         assert_eq!(reflexao_descurtida.curtidas, 0);
     }
+
+    #[test]
+    fn test_merkle_root_versao() {
+        use crate::VersaoBiblia;
+        use soroban_sdk::{Bytes, BytesN, Vec};
+
+        let env = Env::default();
+        let contract_id = env.register(ContratoBiblia, ());
+        let client = ContratoBibliaClient::new(&env, &contract_id);
+
+        let admin = Address::generate(&env);
+        env.mock_all_auths();
+        client.initialize(&admin);
+
+        let id_texto = id_gen_1_1();
+        let texto = String::from_str(&env, "No princípio criou Deus os céus e a terra.");
+
+        // Folha 1 (Gen 1:1)
+        let mut leaf1_bytes = Bytes::new(&env);
+        leaf1_bytes.append(&Bytes::from_array(&env, &[1, 1, 1]));
+        leaf1_bytes.append(&texto.to_bytes());
+        let hash1: BytesN<32> = env.crypto().sha256(&leaf1_bytes).into();
+
+        // Folha 2 (Folha irmã fictícia Gen 1:2)
+        let mut leaf2_bytes = Bytes::new(&env);
+        leaf2_bytes.append(&Bytes::from_array(&env, &[1, 1, 2]));
+        leaf2_bytes.append(&String::from_str(&env, "E a terra era sem forma e vazia.").to_bytes());
+        let hash2: BytesN<32> = env.crypto().sha256(&leaf2_bytes).into();
+
+        // Merkle Root: SHA-256(combine(hash1, hash2))
+        let mut combine = Bytes::new(&env);
+        if hash1 < hash2 {
+            combine.append(&hash1.to_bytes());
+            combine.append(&hash2.to_bytes());
+        } else {
+            combine.append(&hash2.to_bytes());
+            combine.append(&hash1.to_bytes());
+        }
+        let root: BytesN<32> = env.crypto().sha256(&combine).into();
+
+        // Registrar Merkle Root da versão ARC
+        client.registrar_merkle_root_versao(&VersaoBiblia::ARC, &root);
+
+        let stored_root = client.obter_merkle_root_versao(&VersaoBiblia::ARC);
+        assert_eq!(stored_root, Some(root));
+
+        // Prova de Merkle para folha 1 contem hash2
+        let mut proof = Vec::new(&env);
+        proof.push_back(hash2);
+
+        // Verificar prova da Folha 1
+        let valido = client.verificar_texto_merkle(
+            &VersaoBiblia::ARC,
+            &id_texto,
+            &texto.to_bytes(),
+            &proof,
+        );
+        assert!(valido);
+    }
 }

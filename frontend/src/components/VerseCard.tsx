@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useWallet } from "@/context/WalletContext";
 import { useTranslation } from "@/context/LanguageContext";
+import { BIBLE_VERSIONS, VersaoBibliaKey } from "@/lib/stellar";
 import { 
   CheckCircle, 
   ShieldCheck, 
@@ -10,7 +11,9 @@ import {
   Sparkles,
   Lock,
   Globe,
-  X
+  X,
+  Layers,
+  GitBranch
 } from "lucide-react";
 
 interface VerseCardProps {
@@ -20,6 +23,8 @@ interface VerseCardProps {
   verse: number;
   text: string;
   hash: string;
+  selectedVersion?: VersaoBibliaKey;
+  onVersionChange?: (version: VersaoBibliaKey) => void;
   onAddReflection?: (conteudo: string, publica: boolean) => void;
 }
 
@@ -30,6 +35,8 @@ export function VerseCard({
   verse,
   text,
   hash,
+  selectedVersion = "ARC",
+  onVersionChange,
   onAddReflection,
 }: VerseCardProps) {
   const { isConnected, readVerses, markVerseAsRead } = useWallet();
@@ -42,6 +49,8 @@ export function VerseCard({
   const [reflectionText, setReflectionText] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [showHash, setShowHash] = useState(false);
+
+  const activeVersionMeta = BIBLE_VERSIONS.find((v) => v.id === selectedVersion) || BIBLE_VERSIONS[0];
 
   const handleMarkRead = async () => {
     setIsMarking(true);
@@ -65,11 +74,31 @@ export function VerseCard({
         : "bg-elevated border-slate-800 hover:border-slate-700"
     }`}>
       {/* Verse Header */}
-      <div className="flex items-center justify-between gap-4 mb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 font-bold text-xs font-mono-tech">
             {bookName} {chapter}:{verse}
           </span>
+
+          {/* Version Selector Pill */}
+          <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 p-0.5 rounded-lg text-xs font-mono-tech">
+            <span className="text-[10px] text-slate-500 px-1 font-bold">VERSÃO:</span>
+            {BIBLE_VERSIONS.map((v) => (
+              <button
+                key={v.id}
+                onClick={() => onVersionChange && onVersionChange(v.id)}
+                className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all ${
+                  selectedVersion === v.id
+                    ? "bg-teal-500 text-slate-950 shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                }`}
+                title={v.name}
+              >
+                {v.id}
+              </button>
+            ))}
+          </div>
+
           {isRead && (
             <span className="flex items-center gap-1 text-[11px] font-mono-tech font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-md">
               <CheckCircle className="w-3 h-3" />
@@ -81,18 +110,32 @@ export function VerseCard({
         <button
           onClick={() => setShowHash(!showHash)}
           className="flex items-center gap-1 text-slate-400 hover:text-teal-400 text-xs font-mono-tech transition-colors"
-          title="Verificar Hash SHA-256 On-Chain"
+          title="Verificar Merkle Root & Proof SHA-256 On-Chain"
         >
-          <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
-          <span>{showHash ? "Ocultar Hash" : "SHA-256 On-Chain"}</span>
+          <GitBranch className="w-3.5 h-3.5 text-teal-400" />
+          <span>{showHash ? "Ocultar Prova" : "Merkle Proof SHA-256"}</span>
         </button>
       </div>
 
-      {/* SHA-256 Hash Drawer */}
+      {/* Merkle Root & SHA-256 Proof Drawer */}
       {showHash && (
-        <div className="mb-4 p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono-tech text-slate-300 break-all">
-          <span className="text-teal-400 font-semibold">Hash Oficial Registrar: </span>
-          {hash}
+        <div className="mb-4 p-3 rounded-xl bg-slate-950 border border-slate-800 text-[11px] font-mono-tech text-slate-300 space-y-2">
+          <div className="flex items-center justify-between text-teal-400 font-bold border-b border-slate-900 pb-1">
+            <span>VERSÃO SELECIONADA: {activeVersionMeta.name}</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-950 text-teal-300 border border-teal-800">
+              {activeVersionMeta.copyright}
+            </span>
+          </div>
+
+          <div className="break-all">
+            <span className="text-slate-400 font-semibold block">MERKLE ROOT ON-CHAIN (SOROBAN STORAGE):</span>
+            <span className="text-amber-400 font-mono-tech">{activeVersionMeta.merkleRoot}</span>
+          </div>
+
+          <div className="break-all pt-1 border-t border-slate-900">
+            <span className="text-slate-400 font-semibold block">HASH SHA-256 DO VERSÍCULO:</span>
+            <span className="text-teal-300">{hash}</span>
+          </div>
         </div>
       )}
 
@@ -145,17 +188,15 @@ export function VerseCard({
             className="w-full max-w-lg bg-elevated p-6 rounded-2xl border border-slate-700 shadow-2xl relative"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header with Close 'X' Button */}
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-teal-400" />
-                Refletir sobre {bookName} {chapter}:{verse}
+                Refletir sobre {bookName} {chapter}:{verse} ({selectedVersion})
               </h3>
               <button
                 type="button"
                 onClick={() => setShowReflectionModal(false)}
                 className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors"
-                aria-label="Fechar"
               >
                 <X className="w-5 h-5" />
               </button>

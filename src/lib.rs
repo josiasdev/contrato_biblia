@@ -34,6 +34,7 @@ pub enum DataKey {
     StatusReflexoes(IdTexto, Address),
     Certificado(Address, TipoCertificado), // Marca se um leitor já emitiu determinado certificado
     ListaCertificados(Address),            // Vec<Certificado> por leitor
+    MerkleRoot(VersaoBiblia),              // Merkle Root SHA-256 de uma versão completa da Bíblia
 }
 
 #[contract]
@@ -249,6 +250,64 @@ impl ContratoBiblia {
     /// Retorna a lista de certificados conquistados por um leitor
     pub fn listar_certificados(env: Env, leitor: Address) -> Vec<Certificado> {
         certificados::listar_certificados(env, leitor)
+    }
+
+    // --- SUPORTE A MÚLTIPLAS VERSÕES & MERKLE TREE ---
+
+    /// (Admin) Registra a Merkle Root SHA-256 de uma versão completa da Bíblia Sagrada
+    pub fn registrar_merkle_root_versao(env: Env, versao: VersaoBiblia, merkle_root: BytesN<32>) {
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).expect("Contrato não inicializado");
+        admin.require_auth();
+
+        env.storage().persistent().set(&DataKey::MerkleRoot(versao), &merkle_root);
+    }
+
+    /// Retorna a Merkle Root gravada para determinada versão da Bíblia
+    pub fn obter_merkle_root_versao(env: Env, versao: VersaoBiblia) -> Option<BytesN<32>> {
+        env.storage().persistent().get(&DataKey::MerkleRoot(versao))
+    }
+
+    /// Verifica a integridade de um texto contra a Merkle Root da versão usando Merkle Proof
+    pub fn verificar_texto_merkle(
+        env: Env,
+        versao: VersaoBiblia,
+        id_texto: IdTexto,
+        texto: soroban_sdk::Bytes,
+        merkle_proof: Vec<BytesN<32>>,
+    ) -> bool {
+        let stored_root: BytesN<32> = match env.storage().persistent().get(&DataKey::MerkleRoot(versao)) {
+            Some(root) => root,
+            None => return false,
+        };
+
+        // 1. Calcular o hash da folha: SHA-256([livro, capitulo, versiculo, texto])
+        let mut leaf_bytes = soroban_sdk::Bytes::new(&env);
+        leaf_bytes.append(&soroban_sdk::Bytes::from_array(&env, &[
+            id_texto.livro as u8,
+            id_texto.capitulo as u8,
+            id_texto.versiculo as u8,
+        ]));
+        leaf_bytes.append(&texto);
+        let mut current_hash: BytesN<32> = env.crypto().sha256(&leaf_bytes).into();
+
+        // 2. Traversar a prova de Merkle
+        for i in 0..merkle_proof.len() {
+            let sibling = merkle_proof.get(i).unwrap();
+            let mut combine = soroban_sdk::Bytes::new(&env);
+            
+            if current_hash < sibling {
+                combine.append(&current_hash.to_bytes());
+                combine.append(&sibling.to_bytes());
+            } else {
+                combine.append(&sibling.to_bytes());
+                combine.append(&current_hash.to_bytes());
+            }
+
+            current_hash = env.crypto().sha256(&combine).into();
+        }
+
+        // 3. Comparar a raiz calculada com a Merkle Root armazenada no contrato
+        current_hash == stored_root
     }
 }
 

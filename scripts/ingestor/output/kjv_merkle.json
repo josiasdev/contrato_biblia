@@ -1,0 +1,23 @@
+{
+  "versao": "KJV",
+  "merkle_root": "af262b31fdd0e3031ddab639048a9e4a9142526cd3e898dbe458fc68b7c54662",
+  "total_versiculos": 4,
+  "proofs": {
+    "1-1-2": [
+      "a85f9006d67755fe08ebe61968e49e1526538dbabb61f054be9467a8aec16bc5",
+      "15b43305f4263470e4bba81967bdd5905f6e635e2d33074d8e5d19f18fac6484"
+    ],
+    "43-3-16": [
+      "9b20767ac51e2812fd35174aaabb647e8bf68f86aaba8caa6e5528aafbdfa85f",
+      "fa8738eb299b7daf97516067edc819194ee8104bc990fe5dfc70c88c75b7d0a7"
+    ],
+    "19-23-1": [
+      "5a2f6d6e2aee0e5b09cffad8e679c345ce894026d53fff05665b9c58bb4c7352",
+      "fa8738eb299b7daf97516067edc819194ee8104bc990fe5dfc70c88c75b7d0a7"
+    ],
+    "1-1-1": [
+      "17db7346a25e364978fe412c411a40a5c002827b9631b41a052d1f57effe47c2",
+      "15b43305f4263470e4bba81967bdd5905f6e635e2d33074d8e5d19f18fac6484"
+    ]
+  }
+}

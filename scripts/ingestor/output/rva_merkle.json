@@ -1,0 +1,23 @@
+{
+  "versao": "RVA",
+  "merkle_root": "8319e846bc4f1c8cf1c3f6d68080de0fc7fe3ba0be7c419d8a79eba8d422e65c",
+  "total_versiculos": 4,
+  "proofs": {
+    "1-1-2": [
+      "fb4a581841ea02d415166bd5ea7e15825670e5cb1a8b78c84dd8829501d823dc",
+      "b2084d7a0307691241ae0508ea75036fd883bd55c50bd5c7c5fbe109f391f413"
+    ],
+    "19-23-1": [
+      "b6c0497ecdfef92c8a620fb08a89813e3cf0d0d4b749b1836c6097501f0f95cd",
+      "9867ead149a50dc9e72a568f9b92fce78074d18ca3fd26420e31f2229ff1341c"
+    ],
+    "1-1-1": [
+      "9eca2a6bc58961f3266c607970e54ba7b54fb3efceefe529652ddef8640c2823",
+      "b2084d7a0307691241ae0508ea75036fd883bd55c50bd5c7c5fbe109f391f413"
+    ],
+    "43-3-16": [
+      "ad833dffa1c23d650acff146de48e66a3f98baadfbb0d916dea52dc9c4658876",
+      "9867ead149a50dc9e72a568f9b92fce78074d18ca3fd26420e31f2229ff1341c"
+    ]
+  }
+}
