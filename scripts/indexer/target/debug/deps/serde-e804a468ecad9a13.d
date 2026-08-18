@@ -1,0 +1,14 @@
+/home/josias/Projetos/contrato_biblia/scripts/indexer/target/debug/deps/serde-e804a468ecad9a13.d: /home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/lib.rs /home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/integer128.rs /home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/mod.rs /home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/de.rs /home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/ser.rs /home/josias/Projetos/contrato_biblia/scripts/indexer/target/debug/build/serde-46367230ef002103/out/private.rs
+
+/home/josias/Projetos/contrato_biblia/scripts/indexer/target/debug/deps/libserde-e804a468ecad9a13.rlib: /home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/lib.rs /home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/integer128.rs /home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/mod.rs /home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/de.rs /home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/ser.rs /home/josias/Projetos/contrato_biblia/scripts/indexer/target/debug/build/serde-46367230ef002103/out/private.rs
+
+/home/josias/Projetos/contrato_biblia/scripts/indexer/target/debug/deps/libserde-e804a468ecad9a13.rmeta: /home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/lib.rs /home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/integer128.rs /home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/mod.rs /home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/de.rs /home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/ser.rs /home/josias/Projetos/contrato_biblia/scripts/indexer/target/debug/build/serde-46367230ef002103/out/private.rs
+
+/home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/lib.rs:
+/home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/integer128.rs:
+/home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/mod.rs:
+/home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/de.rs:
+/home/josias/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/ser.rs:
+/home/josias/Projetos/contrato_biblia/scripts/indexer/target/debug/build/serde-46367230ef002103/out/private.rs:
+
+# env-dep:OUT_DIR=/home/josias/Projetos/contrato_biblia/scripts/indexer/target/debug/build/serde-46367230ef002103/out

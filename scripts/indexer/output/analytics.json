@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-08-18T02:58:59.505315514+00:00",
+  "rede_blockchain": "Stellar Futurenet (Soroban Smart Contract)",
+  "rpc_endpoint": "https://rpc-futurenet.stellar.org",
+  "total_recompensas_resgatadas_tal": 2500,
+  "total_certificados_soulbound_emitidos": 12,
+  "distribuicao_certificados": {
+    "por_livro": 7,
+    "por_categoria": 3,
+    "por_testamento": 1,
+    "biblia_completa": 1
+  },
+  "estatisticas_rede": {
+    "total_leitores_ativos": 42,
+    "versiculos_validados_sha256": 31102,
+    "merkle_roots_registradas": 5
+  }
+}
