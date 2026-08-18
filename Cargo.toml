@@ -1,8 +1,9 @@
- [package]
+[package]
 name = "contrato_biblia"
-version = "1.0.1"
+version = "1.1.0"
 edition = "2021"
 publish = true
+readme = "README_PT_BR.md"
 authors = ["Josias Batista <francisco.batista67@alu.ufc.br>"]
 description = "Uma biblioteca Rust para um smart contract na blockchain Stellar (Soroban) focado em uma aplicação da Bíblia Sagrada."
 license = "MIT"
@@ -16,7 +17,7 @@ soroban-sdk = "23.0.3"
 
 
  [lib]
- crate-type = ["cdylib"]
+ crate-type = ["cdylib", "rlib"]
 
  [profile.release]
  opt-level = "z"
