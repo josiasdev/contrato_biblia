@@ -8,6 +8,16 @@ export const STELLAR_CONFIG = {
   adminAddress: process.env.NEXT_PUBLIC_ADMIN_ADDRESS || "GADMIN...",
 };
 
+export function getExplorerAccountUrl(address: string): string {
+  if (!address) return "https://stellar.expert/explorer/futurenet";
+  return `https://stellar.expert/explorer/futurenet/account/${address}`;
+}
+
+export function getExplorerContractUrl(contractId?: string): string {
+  const cid = contractId || STELLAR_CONFIG.contractId;
+  return `https://stellar.expert/explorer/futurenet/contract/${cid}`;
+}
+
 export interface IdTexto {
   livro: number;
   capitulo: number;

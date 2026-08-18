@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import { CertificadoItem } from "./stellar";
+import { CertificadoItem, getExplorerAccountUrl } from "./stellar";
 import { formatAddress, formatTimestamp } from "./utils";
 
 export function generateCertificatePDF(cert: CertificadoItem, title: string) {
@@ -103,11 +103,11 @@ export function generateCertificatePDF(cert: CertificadoItem, title: string) {
   doc.text(cert.hash_certificado, 38, 152);
 
   // Direct Explorer Link
-  const explorerUrl = `https://lab.stellar.org/`;
+  const explorerUrl = getExplorerAccountUrl(cert.leitor);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(56, 189, 248);
-  doc.textWithLink("VERIFICAR NO STELLAR LAB / EXPLORER ↗", width / 2, 170, {
+  doc.textWithLink("VERIFICAR NO STELLAR EXPLORER ↗", width / 2, 170, {
     url: explorerUrl,
     align: "center",
   });

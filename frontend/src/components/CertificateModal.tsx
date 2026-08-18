@@ -2,6 +2,7 @@
 
 import { useWallet } from "@/context/WalletContext";
 import { useTranslation } from "@/context/LanguageContext";
+import { getExplorerAccountUrl } from "@/lib/stellar";
 import { generateCertificatePDF } from "@/lib/pdf";
 import { formatAddress, formatTimestamp } from "@/lib/utils";
 import { 
@@ -107,7 +108,7 @@ export function CertificateModal() {
           </button>
 
           <a
-            href="https://lab.stellar.org/"
+            href={getExplorerAccountUrl(newlyIssuedCert.leitor)}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full sm:w-auto flex items-center justify-center gap-1.5 py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-teal-400 hover:border-slate-700 font-semibold text-xs font-mono-tech transition-all"

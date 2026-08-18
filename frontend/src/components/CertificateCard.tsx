@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useWallet } from "@/context/WalletContext";
 import { useTranslation } from "@/context/LanguageContext";
-import { CertificadoItem, TipoCertificadoKey } from "@/lib/stellar";
+import { CertificadoItem, TipoCertificadoKey, getExplorerAccountUrl } from "@/lib/stellar";
 import { generateCertificatePDF } from "@/lib/pdf";
 import { formatAddress, formatTimestamp } from "@/lib/utils";
 import { 
@@ -163,7 +163,7 @@ export function CertificateCard({
             </button>
 
             <a
-              href="https://lab.stellar.org/"
+              href={getExplorerAccountUrl(issuedCert.leitor)}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-xs font-mono-tech text-slate-400 hover:text-teal-400 transition-colors"
