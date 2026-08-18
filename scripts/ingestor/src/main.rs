@@ -148,7 +148,7 @@ fn get_canonical_bible_verses(versao: &str) -> Vec<VersiculoCanonica> {
 fn main() {
     println!("=== PIPELINE DE INGESTÃO BÍBLICA DOS 66 LIVROS (MERKLE TREE GENERATOR) ===");
 
-    let versoes = vec!["ARC", "ACF", "KJV", "ASV", "RVA"];
+    let versoes = vec!["ARC", "KJV", "RVA"];
     let output_dir = Path::new("output");
 
     if !output_dir.exists() {

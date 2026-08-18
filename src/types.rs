@@ -1,14 +1,12 @@
 use soroban_sdk::{contracttype, Address, String, BytesN};
 
-/// Versões da Bíblia Sagrada em Domínio Público / Open-Source
+/// Versões da Bíblia Sagrada em Domínio Público / Open-Source (PT, EN, ES)
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VersaoBiblia {
-    ARC, // Almeida Revista e Corrigida (PT)
-    ACF, // Almeida Corrigida Fiel (PT)
-    KJV, // King James Version (EN)
-    ASV, // American Standard Version (EN)
-    RVA, // Reina Valera Antigua (ES)
+    ARC, // Português - Almeida Revista e Corrigida
+    KJV, // Inglês - King James Version
+    RVA, // Espanhol - Reina Valera Antigua
 }
 
 /// Testamento Bíblico

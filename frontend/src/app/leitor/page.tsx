@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, Suspense } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "@/context/LanguageContext";
 import { BOOKS, MULTI_VERSION_VERSES, BIBLE_VERSIONS, VersaoBibliaKey } from "@/lib/stellar";
@@ -9,7 +9,7 @@ import { simpleSha256 } from "@/lib/utils";
 import { BookOpen, Search, Filter, ShieldCheck, Layers, GitBranch, Sparkles } from "lucide-react";
 
 function LeitorContent() {
-  const { t } = useTranslation();
+  const { locale, t } = useTranslation();
   const searchParams = useSearchParams();
   const initialBookParam = searchParams.get("livro");
 
@@ -19,6 +19,13 @@ function LeitorContent() {
   const [selectedChapter, setSelectedChapter] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedVersion, setSelectedVersion] = useState<VersaoBibliaKey>("ARC");
+
+  // Adaptação automática da versão da Bíblia conforme o idioma do site
+  useEffect(() => {
+    if (locale === "pt") setSelectedVersion("ARC");
+    else if (locale === "en") setSelectedVersion("KJV");
+    else if (locale === "es") setSelectedVersion("RVA");
+  }, [locale]);
 
   const selectedBook = BOOKS.find((b) => b.id === selectedBookId) || BOOKS[0];
   const activeVersionMeta = BIBLE_VERSIONS.find((v) => v.id === selectedVersion) || BIBLE_VERSIONS[0];

@@ -67,7 +67,7 @@ export interface CertificadoItem {
   hash_certificado: string;
 }
 
-export type VersaoBibliaKey = "ARC" | "ACF" | "KJV" | "ASV" | "RVA";
+export type VersaoBibliaKey = "ARC" | "KJV" | "RVA";
 
 export interface VersaoBibliaMeta {
   id: VersaoBibliaKey;
@@ -83,35 +83,21 @@ export const BIBLE_VERSIONS: VersaoBibliaMeta[] = [
     name: "ARC (Almeida Revista e Corrigida)",
     language: "PT",
     copyright: "Domínio Público (Open-Source)",
-    merkleRoot: "0xada98826e1980606a075d8560f5a94fe5c1e036ee6f6b05412a1cc63b2cdd182",
-  },
-  {
-    id: "ACF",
-    name: "ACF (Almeida Corrigida Fiel)",
-    language: "PT",
-    copyright: "Domínio Público (Open-Source)",
-    merkleRoot: "0xada98826e1980606a075d8560f5a94fe5c1e036ee6f6b05412a1cc63b2cdd182",
+    merkleRoot: "0xff05eb41df67389c9d85bd116534446ce4396f44816c1c0dd7bed61cee90e324",
   },
   {
     id: "KJV",
     name: "KJV (King James Version)",
     language: "EN",
     copyright: "Domínio Público (Open-Source)",
-    merkleRoot: "0xaf262b31fdd0e3031ddab639048a9e4a9142526cd3e898dbe458fc68b7c54662",
-  },
-  {
-    id: "ASV",
-    name: "ASV (American Standard Version)",
-    language: "EN",
-    copyright: "Domínio Público (Open-Source)",
-    merkleRoot: "0xada98826e1980606a075d8560f5a94fe5c1e036ee6f6b05412a1cc63b2cdd182",
+    merkleRoot: "0x296ce7d4954520c44497d027b8298239bf9a2b0bcf5a30efd18b59ef5d3e550b",
   },
   {
     id: "RVA",
     name: "RVA (Reina Valera Antigua)",
     language: "ES",
     copyright: "Domínio Público (Open-Source)",
-    merkleRoot: "0x8319e846bc4f1c8cf1c3f6d68080de0fc7fe3ba0be7c419d8a79eba8d422e65c",
+    merkleRoot: "0xfa571252d0943bd8e839d41f5e4425faa0cafa7c6e677fa42fe0923b1b643a9f",
   },
 ];
 
@@ -207,22 +193,10 @@ export const MULTI_VERSION_VERSES: Record<VersaoBibliaKey, Record<string, { text
     "19-23-1": { text: "O Senhor é o meu pastor, nada me faltará.", hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" },
     "43-3-16": { text: "Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito.", hash: "8f48174577f805a8b792e858cf09f18a6e872e428c0a87a8bfa4911f4d92a10a" },
   },
-  ACF: {
-    "1-1-1": { text: "No princípio criou Deus os céus e a terra.", hash: "f2e9a224a50ee5118533e4544253966a348003183a69620596323145f15a201b" },
-    "1-1-2": { text: "E a terra era sem forma e vazia; e havia trevas sobre a face do abismo.", hash: "a4c28f0909e75525b6826d7cf5a9163e778a876a349b109e9921b790d0b00511" },
-    "19-23-1": { text: "O Senhor é o meu pastor, nada me faltará.", hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" },
-    "43-3-16": { text: "Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito.", hash: "8f48174577f805a8b792e858cf09f18a6e872e428c0a87a8bfa4911f4d92a10a" },
-  },
   KJV: {
     "1-1-1": { text: "In the beginning God created the heaven and the earth.", hash: "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" },
     "1-1-2": { text: "And the earth was without form, and void; and darkness was upon the face of the deep.", hash: "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8" },
     "19-23-1": { text: "The LORD is my shepherd; I shall not want.", hash: "11a566597793d48995a5f7881c15f9d15024d3505c866d9c9a6a8b726487e411" },
-    "43-3-16": { text: "For God so loved the world, that he gave his only begotten Son.", hash: "d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa" },
-  },
-  ASV: {
-    "1-1-1": { text: "In the beginning God created the heavens and the earth.", hash: "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" },
-    "1-1-2": { text: "And the earth was waste and void; and darkness was upon the face of the deep.", hash: "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8" },
-    "19-23-1": { text: "Jehovah is my shepherd; I shall not want.", hash: "11a566597793d48995a5f7881c15f9d15024d3505c866d9c9a6a8b726487e411" },
     "43-3-16": { text: "For God so loved the world, that he gave his only begotten Son.", hash: "d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa" },
   },
   RVA: {
