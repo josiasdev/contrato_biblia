@@ -1,7 +1,50 @@
 use soroban_sdk::{contracttype, Address, String, BytesN};
 
+/// Testamento Bíblico
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum Testamento {
+    Antigo,
+    Novo,
+}
+
+/// Categorias da Bíblia Sagrada (Canônicas Protestante/Evangélica - 66 Livros)
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum CategoriaLivro {
+    Pentateuco,          // Livros 1 a 5 (Gênesis a Deuteronômio)
+    HistoricosAT,        // Livros 6 a 17 (Josué a Ester)
+    Poeticos,            // Livros 18 a 22 (Jó a Cantares de Salomão)
+    ProfetasMaiores,     // Livros 23 a 27 (Isaías a Daniel)
+    ProfetasMenores,     // Livros 28 a 39 (Oséias a Malaquias)
+    Evangelhos,          // Livros 40 a 43 (Mateus a João)
+    HistoricoNT,         // Livro 44 (Atos dos Apóstolos)
+    CartasPaulinas,      // Livros 45 a 57 (Romanos a Filemom)
+    CartasGerais,        // Livros 58 a 65 (Hebreus a Judas)
+    Profecia,            // Livro 66 (Apocalipse)
+}
+
+/// Tipo do Certificado Emitido
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum TipoCertificado {
+    Livro(u32),
+    Categoria(CategoriaLivro),
+    Testamento(Testamento),
+    BibliaCompleta,
+}
+
+/// Registro do Certificado On-Chain (Soulbound Credential)
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Certificado {
+    pub leitor: Address,
+    pub tipo: TipoCertificado,
+    pub timestamp: u64,
+    pub hash_certificado: BytesN<32>,
+}
+
 // Estrutura principal para armazenar reflexões dos usuários
-/// Combina o conteúdo com metadados para verificação e controle
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Reflexao {
@@ -15,7 +58,6 @@ pub struct Reflexao {
 }
 
 /// Estrutura para comentários em reflexões públicas
-/// Permite discussões e interações entre usuários
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Comentario {
@@ -26,7 +68,6 @@ pub struct Comentario {
 }
 
 /// Enum para controle de status das reflexões
-/// Permite moderação e controle de visibilidade
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum StatusReflexao {

@@ -9,6 +9,7 @@ O **Contrato Bíblia** é um smart contract desenvolvido em Rust para a platafor
 2. **Prova de Leitura (Proof of Reading)**: Registrar de forma imutável os versículos lidos por cada usuário.
 3. **Engajamento Social Descentralizado**: Permitir que leitores criem reflexões (públicas ou privadas), curtam e comentem em reflexões de outros leitores.
 4. **Sistema de Recompensas (Token TAL)**: Gamificar a leitura bíblica emitindo eventos on-chain quando um leitor conclui um livro inteiro, acionando o envio de tokens via backend off-chain.
+5. **Categorização & Certificados On-Chain**: Categorizar os 66 livros da Bíblia Sagrada (Cânon Protestante/Evangélico) e emitir credenciais não-transferíveis (Soulbound) com hash SHA-256 único para conclusão de Livros, Categorias, Testamentos ou a Bíblia Completa.
 
 ---
 
@@ -18,17 +19,19 @@ O projeto segue a estrutura padrão de contratos Soroban em Rust (`#![no_std]`):
 
 ```
 contrato_biblia/
-├── Cargo.toml               # Configurações do pacote Rust, dependências (soroban-sdk 23.0.3) e perfis WASM
+├── Cargo.toml               # Configurações do pacote Rust, dependências (soroban-sdk 23.5.3) e perfis WASM
 ├── README.md / README_PT_BR.md  # Documentação geral e guia de uso rápido (EN / PT-BR)
 ├── docs/
+│   ├── CONTEXT.md              # Contexto arquitetural do smart contract
 │   ├── DEVELOPER_GUIDE.md      # Guia técnico em Inglês
 │   └── DEVELOPER_GUIDE_PT_BR.md # Guia técnico detalhado em Português
 ├── src/
 │   ├── lib.rs               # Contrato principal (ContratoBiblia), DataKeys, Eventos e Interface Pública
-│   ├── types.rs             # Estruturas de dados (IdTexto, Reflexao, Comentario, StatusReflexao) e constantes
+│   ├── types.rs             # Estruturas de dados (IdTexto, Reflexao, Comentario, Certificado, CategoriaLivro, etc.)
 │   ├── reflexoes.rs         # Lógica de negócios de reflexões, curtidas e comentários
+│   ├── certificados.rs      # Mapeamento canônico, verificações e emissão de certificados
 │   └── teste.rs             # Suíte completa de testes unitários e de integração
-└── target/                  # Artefatos compilados (incluindo o binário .wasm)
+└── frontend/                # dApp Web em Next.js 16 (App Router, Tailwind v4, i18n)
 ```
 
 ---
@@ -37,7 +40,7 @@ contrato_biblia/
 
 ### Tipos de Armazenamento no Soroban
 - **Instance Storage**: Usado para metadados globais e configurações de estado do contrato (admin, mapa global de hashes, mapa global de leituras simples).
-- **Persistent Storage**: Usado para dados de longo prazo por usuário ou entidade (progresso de leitura por livro, reflexões, comentários, status de recompensa).
+- **Persistent Storage**: Usado para dados de longo prazo por usuário ou entidade (progresso de leitura por livro, reflexões, comentários, status de recompensa e certificados conquistados).
 
 ### Chaves de Estado (`DataKey`)
 | Chave | Tipo de Storage | Descrição |
@@ -54,110 +57,91 @@ contrato_biblia/
 | `CurtidasReflexao(IdTexto, Address, Address)` | Persistent | Estado booleano de curtida por (versículo, autor, curtidor) |
 | `ComentariosReflexao(IdTexto, Address)` | Persistent | Lista `Vec<Comentario>` vinculada a uma reflexão |
 | `StatusReflexoes(IdTexto, Address)` | Persistent | Estado da reflexão (`StatusReflexao::Ativa` ou `StatusReflexao::Removida`) |
+| `Certificado(Address, TipoCertificado)` | Persistent | Marcação de emissão do certificado evitando duplicidade |
+| `ListaCertificados(Address)` | Persistent | Lista `Vec<Certificado>` armazenando as credenciais emitidas para o leitor |
 
 ---
 
 ## 🧩 Estruturas de Dados (`src/types.rs`)
 
 ```rust
-// Identificador universal de passagens bíblicas
-pub struct IdTexto {
-    pub livro: u32,       // Ex: 1 para Gênesis
-    pub capitulo: u32,    // Ex: 1
-    pub versiculo: u32,   // Ex: 1
+// Categorias Canônicas da Bíblia Sagrada (66 Livros - Evangélica/Protestante)
+pub enum CategoriaLivro {
+    Pentateuco,          // Livros 1 a 5 (Gênesis a Deuteronômio)
+    HistoricosAT,        // Livros 6 a 17 (Josué a Ester)
+    Poeticos,            // Livros 18 a 22 (Jó a Cantares de Salomão)
+    ProfetasMaiores,     // Livros 23 a 27 (Isaías a Daniel)
+    ProfetasMenores,     // Livros 28 a 39 (Oséias a Malaquias)
+    Evangelhos,          // Livros 40 a 43 (Mateus a João)
+    HistoricoNT,         // Livro 44 (Atos dos Apóstolos)
+    CartasPaulinas,      // Livros 45 a 57 (Romanos a Filemom)
+    CartasGerais,        // Livros 58 a 65 (Hebreus a Judas)
+    Profecia,            // Livro 66 (Apocalipse)
 }
 
-// Registro de reflexão pessoal do leitor
-pub struct Reflexao {
+// Tipos de Certificado Emitidos
+pub enum TipoCertificado {
+    Livro(u32),
+    Categoria(CategoriaLivro),
+    Testamento(Testamento),
+    BibliaCompleta,
+}
+
+// Credencial do Certificado On-Chain
+pub struct Certificado {
     pub leitor: Address,
-    pub id_texto: IdTexto,
-    pub conteudo: String,           // Máximo de 500 caracteres (MAX_REFLEXAO_CHARS)
+    pub tipo: TipoCertificado,
     pub timestamp: u64,
-    pub hash_reflexao: BytesN<32>,  // Hash SHA-256 do conteúdo para verificação de integridade
-    pub publica: bool,              // Visibilidade: true (pública) ou false (privada)
-    pub curtidas: u32,
-}
-
-// Registro de comentário em reflexão pública
-pub struct Comentario {
-    pub autor: Address,
-    pub conteudo: String,           // Máximo de 200 caracteres (MAX_COMENTARIO_CHARS)
-    pub timestamp: u64,
-    pub curtidas: u32,
-}
-
-// Controle de status e moderação
-pub enum StatusReflexao {
-    Ativa,
-    Removida,
+    pub hash_certificado: BytesN<32>, // Hash SHA-256 único do certificado
 }
 ```
 
 ---
 
-## ⚡ Métodos Principais da API do Contrato
+## ⚡ Métodos da API do Contrato
 
 ### 1. Administração & Autenticidade
-- `initialize(admin: Address)`: Define a autoridade administrativa (única execução).
-- `registrar_hash(id_texto: IdTexto, hash: BytesN<32>)`: Define o hash oficial de um versículo (Requer auth do admin).
-- `verificar_texto(id_texto: IdTexto, texto: Bytes) -> bool`: Valida se o texto fornecido corresponde ao hash oficial.
-- `registrar_meta_livro(livro_id: u32, total_versiculos: u32)`: Define a meta de versículos de um livro (Requer auth do admin).
+- `initialize(admin: Address)`
+- `registrar_hash(id_texto: IdTexto, hash: BytesN<32>)`
+- `verificar_texto(id_texto: IdTexto, texto: Bytes) -> bool`
+- `registrar_meta_livro(livro_id: u32, total_versiculos: u32)`
 
 ### 2. Prova de Leitura & Recompensas
-- `marcar_lido(leitor: Address, id_texto: IdTexto)`: Registra a leitura do versículo e incrementa o progresso do usuário no livro. (Requer auth do leitor).
-- `verificar_leitura(leitor: Address, id_texto: IdTexto) -> String`: Retorna status descritivo da leitura.
-- `reivindicar_recompensa_livro(leitor: Address, livro_id: u32)`: Verifica se o progresso atinge/supera a meta do livro. Se válido, marca a recompensa como recebida e emite o evento `RecompensaReivindicada` com o valor de `100_0000000` (100 TAL tokens com 7 casas decimais).
+- `marcar_lido(leitor: Address, id_texto: IdTexto)`
+- `verificar_leitura(leitor: Address, id_texto: IdTexto) -> String`
+- `reivindicar_recompensa_livro(leitor: Address, livro_id: u32)`
 
-### 3. Rede Social (Reflexões, Curtidas e Comentários)
-- `adicionar_reflexao(leitor: Address, id_texto: IdTexto, conteudo: String, publica: bool)`: Exige leitura prévia do versículo. Limite de 500 caracteres.
-- `obter_reflexao(leitor: Address, id_texto: IdTexto) -> Option<Reflexao>`: Retorna a reflexão do autor.
-- `listar_reflexoes_publicas(id_texto: IdTexto, limite: u32, offset: u32) -> Vec<Reflexao>`: Retorna reflexões públicas ativas com suporte a paginação.
-- `curtir_reflexao(curtidor: Address, id_texto: IdTexto, autor_reflexao: Address)`: Alterna (*toggle*) o estado da curtida.
-- `comentar_reflexao(comentarista: Address, id_texto: IdTexto, autor_reflexao: Address, conteudo: String)`: Adiciona um comentário (máx. 200 caracteres).
-- `remover_comentario(usuario: Address, id_texto: IdTexto, autor_reflexao: Address, indice_comentario: u32)`: Permite que o autor remova seu comentário.
-- `obter_comentarios(id_texto: IdTexto, autor_reflexao: Address) -> Vec<Comentario>`: Lista os comentários de uma reflexão.
-- `verificar_status_reflexao(id_texto: IdTexto, autor_reflexao: Address) -> StatusReflexao`: Consulta o status de visibilidade/moderação.
+### 3. Categorização & Certificados On-Chain
+- `obter_categoria_livro(livro_id: u32) -> Option<CategoriaLivro>`
+- `obter_testamento_livro(livro_id: u32) -> Option<Testamento>`
+- `verificar_conclusao_categoria(leitor: Address, categoria: CategoriaLivro) -> bool`
+- `verificar_conclusao_testamento(leitor: Address, testamento: Testamento) -> bool`
+- `emitir_certificado(leitor: Address, tipo: TipoCertificado) -> Certificado`
+- `listar_certificados(leitor: Address) -> Vec<Certificado>`
+
+### 4. Rede Social (Reflexões, Curtidas e Comentários)
+- `adicionar_reflexao(leitor: Address, id_texto: IdTexto, conteudo: String, publica: bool)`
+- `obter_reflexao(leitor: Address, id_texto: IdTexto) -> Option<Reflexao>`
+- `listar_reflexoes_publicas(id_texto: IdTexto, limite: u32, offset: u32) -> Vec<Reflexao>`
+- `curtir_reflexao(curtidor: Address, id_texto: IdTexto, autor_reflexao: Address)`
+- `comentar_reflexao(comentarista: Address, id_texto: IdTexto, autor_reflexao: Address, conteudo: String)`
+- `remover_comentario(usuario: Address, id_texto: IdTexto, autor_reflexao: Address, indice_comentario: u32)`
 
 ---
 
 ## 🔔 Integração Off-Chain (Eventos)
 
-O contrato **não realiza cunhagem/transferência direta de tokens mintáveis**, delegando isso à arquitetura de microsserviços através da emissão de eventos:
-
-- **Evento**: `RecompensaReivindicada`
-- **Payload**:
-  - `leitor`: Address
-  - `livro_id`: u32
-  - `valor`: u128 (`100_0000000`)
-- **Funcionamento**: Um listener no backend intercepta o evento emitido no ledger da Stellar e processa a transferência dos tokens TAL para a carteira do usuário.
+- **`RecompensaReivindicada`**: `{ leitor: Address, livro_id: u32, valor: u128 }`
+- **`CertificadoEmitido`**: `{ leitor: Address, tipo: TipoCertificado, hash_certificado: BytesN<32>, timestamp: u64 }`
 
 ---
 
 ## 🛠️ Comandos de Desenvolvimento
 
-### Testes Unitários e de Integração
 ```bash
+# Executar Testes Unitários
 cargo test
-```
 
-### Compilação do Contrato (WASM)
-```bash
+# Compilar para WebAssembly
 stellar contract build
 ```
-O binário será gerado em: `target/wasm32-unknown-unknown/release/contrato_biblia.wasm`.
-
-### Deployment na Stellar Futurenet/Testnet
-```bash
-stellar contract deploy \
-  --wasm target/wasm32-unknown-unknown/release/contrato_biblia.wasm \
-  --source-account admin \
-  --network futurenet \
-  --alias contrato_biblia
-```
-
----
-
-## 💡 Convenções e Boas Práticas
-- **`#![no_std]`**: Código otimizado para execução leve em WebAssembly no ambiente Soroban.
-- **Validação Antecipada**: Regras de negócio (ex: exigir leitura antes da reflexão, limite de caracteres, evitar duplicidade de reflexão) são validadas com `panic!`.
-- **Autenticação Rigorosa**: Uso do `require_auth()` em todas as funções mutáveis que alteram o estado em nome de um usuário ou administrador.

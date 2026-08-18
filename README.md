@@ -23,6 +23,7 @@ For a detailed technical guide on the architecture and development, check the [D
 ✅ **Text Authenticity**: Verification of Bible text integrity using SHA-256 hashes. <br>
 ✅ **Proof of Reading**: On-chain reading progress tracking system. <br>
 ✅ **Reward System**: Tracks reading progress and emits events (for off-chain backend processing) to distribute tokens (TAL) upon completing a book. <br>
+✅ **On-Chain Certificates & Categorization**: Canonical structure for all 66 Bible books and issuance of non-transferable Soulbound Credentials (Books, Categories, Testaments, or Complete Bible). <br>
 ✅ **Personal Reflections**: Users can write and store public or private reflections on Bible passages. <br>
 ✅ **Social Engagement**: Like and comment system to promote community interaction. <br>
 ✅ **Comment Management**: Users can add and delete their own comments. <br>

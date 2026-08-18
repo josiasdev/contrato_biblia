@@ -23,6 +23,7 @@ Para um guia técnico detalhado da arquitetura e desenvolvimento, veja o [Guia d
 ✅ **Autenticidade de Textos**: Verificação da integridade de textos bíblicos usando hashes SHA-256. <br>
 ✅ **Prova de Leitura**: Sistema de registro de progresso de leitura na blockchain. <br>
 ✅ **Sistema de Recompensas**: Rastreia o progresso de leitura e emite eventos (via backend) para a distribuição de tokens (TAL) quando um livro é concluído. <br>
+✅ **Categorização & Certificados On-Chain**: Categorização canônica dos 66 livros bíblicos e emissão de credenciais Soulbound não-transferíveis (Livros, Categorias, Testamentos ou Bíblia Completa). <br>
 ✅ **Reflexões Pessoais**: Usuários podem escrever e armazenar reflexões (públicas ou privadas) sobre passagens. <br>
 ✅ **Engajamento Social**: Sistema de curtidas e comentários para promover a interação comunitária. <br>
 ✅ **Gerenciamento de Comentários**: Usuários podem adicionar e remover seus próprios comentários. <br>

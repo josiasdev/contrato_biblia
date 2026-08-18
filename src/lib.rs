@@ -4,9 +4,11 @@ use core::cmp::Ordering;
 
 mod types;
 mod reflexoes;
+mod certificados;
 
 pub use types::*;
 pub use reflexoes::*;
+pub use certificados::*;
 
 #[contractevent]
 struct RecompensaReivindicada {
@@ -30,6 +32,8 @@ pub enum DataKey {
     CurtidasReflexao(IdTexto, Address, Address),
     ComentariosReflexao(IdTexto, Address),
     StatusReflexoes(IdTexto, Address),
+    Certificado(Address, TipoCertificado), // Marca se um leitor já emitiu determinado certificado
+    ListaCertificados(Address),            // Vec<Certificado> por leitor
 }
 
 #[contract]
@@ -103,10 +107,6 @@ impl ContratoBiblia {
     }
 
     // Permite que os usuários adicionarem reflexões pessoais sobre textos bíblicos
-    // pode ser pública (visível para todos) ou privada (apenas para o autor)
-    // Requer que o usuário tenha marcado o texto como lido
-    // Cada usuário pode ter apenas uma reflexão por texto 
-
     pub fn adicionar_reflexao(
         env: Env,
         leitor: Address,
@@ -117,8 +117,6 @@ impl ContratoBiblia {
         reflexoes::adicionar_reflexao(env, leitor, id_texto, conteudo, publica)
     }
 
-    // Obtém uma reflexão específica de um usuário sobre um texto
-    /// Retorna None se a reflexão não existir ou foi removida
     pub fn obter_reflexao(
         env: Env,
         leitor: Address,
@@ -127,9 +125,6 @@ impl ContratoBiblia {
         reflexoes::obter_reflexao(env, leitor, id_texto)
     }
 
-    /// Lista reflexões públicas de um texto específico com paginação
-    /// Permite navegação através de grandes volumes de reflexões
-    /// Filtra automaticamente reflexões removidas ou privadas
     pub fn listar_reflexoes_publicas(
         env: Env,
         id_texto: IdTexto,
@@ -139,9 +134,6 @@ impl ContratoBiblia {
         reflexoes::listar_reflexoes_publicas(env, id_texto, limite, offset)
     }
 
-    /// Sistema de engajamento: permite curtir/descurtir reflexões públicas
-    /// Funciona como toggle: se já curtiu, remove a curtida
-    /// Incrementa/decrementa contador de curtidas da reflexão
     pub fn curtir_reflexao(
         env: Env,
         curtidor: Address,
@@ -151,9 +143,6 @@ impl ContratoBiblia {
         reflexoes::curtir_reflexao(env, curtidor, id_texto, autor_reflexao)
     }
 
-    /// Permite adicionar comentários em reflexões públicas
-    /// Cria discussões e interações entre usuários
-    /// Comentários ficam permanentemente armazenados no blockchain
     pub fn comentar_reflexao(
         env: Env,
         comentarista: Address,
@@ -164,8 +153,6 @@ impl ContratoBiblia {
         reflexoes::comentar_reflexao(env, comentarista, id_texto, autor_reflexao, conteudo)
     }
 
-    /// Remove um comentário específico do usuário
-    /// Apenas o autor do comentário pode removê-lo
     pub fn remover_comentario(
         env: Env,
         usuario: Address,
@@ -176,8 +163,6 @@ impl ContratoBiblia {
         reflexoes::remover_comentario(env, usuario, id_texto, autor_reflexao, indice_comentario)
     }
 
-    /// Obtém todos os comentários de uma reflexão específica
-    /// Retorna lista ordenada cronologicamente
     pub fn obter_comentarios(
         env: Env,
         id_texto: IdTexto,
@@ -186,8 +171,6 @@ impl ContratoBiblia {
         reflexoes::obter_comentarios(env, id_texto, autor_reflexao)
     }
 
-    /// Verifica o status atual de uma reflexão (ativa ou removida)
-    /// Usado para controle de moderação e visibilidade
     pub fn verificar_status_reflexao(
         env: Env,
         id_texto: IdTexto,
@@ -196,9 +179,6 @@ impl ContratoBiblia {
         reflexoes::verificar_status_reflexao(env, id_texto, autor_reflexao)
     }
 
-
-    /// (Admin) Define o número total de versículos de um livro.
-    /// Ex: livro 1 (Gênesis) tem 1533 versículos.
     pub fn registrar_meta_livro(env: Env, livro_id: u32, total_versiculos: u32) {
         let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         admin.require_auth();
@@ -228,9 +208,7 @@ impl ContratoBiblia {
 
         env.storage().persistent().set(&key_recompensa, &true);
 
-
         let recompensa_em_tokens: u128 = 100_0000000;
-
 
         RecompensaReivindicada::publish(
             &RecompensaReivindicada{
@@ -239,6 +217,38 @@ impl ContratoBiblia {
                 valor: recompensa_em_tokens
             }, &env
         );
+    }
+
+    // --- NOVAS FUNÇÕES: CATEGORIZAÇÃO E SISTEMA DE CERTIFICADOS ---
+
+    /// Retorna a categoria canônica de um livro (1 a 66)
+    pub fn obter_categoria_livro(_env: Env, livro_id: u32) -> Option<CategoriaLivro> {
+        certificados::obter_categoria_livro(livro_id)
+    }
+
+    /// Retorna o testamento de um livro (1 a 66)
+    pub fn obter_testamento_livro(_env: Env, livro_id: u32) -> Option<Testamento> {
+        certificados::obter_testamento_livro(livro_id)
+    }
+
+    /// Consulta se um leitor concluiu 100% de uma categoria bíblica
+    pub fn verificar_conclusao_categoria(env: Env, leitor: Address, categoria: CategoriaLivro) -> bool {
+        certificados::verificar_conclusao_categoria(&env, &leitor, categoria)
+    }
+
+    /// Consulta se um leitor concluiu 100% de um testamento
+    pub fn verificar_conclusao_testamento(env: Env, leitor: Address, testamento: Testamento) -> bool {
+        certificados::verificar_conclusao_testamento(&env, &leitor, testamento)
+    }
+
+    /// Emite um certificado on-chain (Livro, Categoria, Testamento ou Bíblia Completa)
+    pub fn emitir_certificado(env: Env, leitor: Address, tipo: TipoCertificado) -> Certificado {
+        certificados::emitir_certificado(env, leitor, tipo)
+    }
+
+    /// Retorna a lista de certificados conquistados por um leitor
+    pub fn listar_certificados(env: Env, leitor: Address) -> Vec<Certificado> {
+        certificados::listar_certificados(env, leitor)
     }
 }
 
