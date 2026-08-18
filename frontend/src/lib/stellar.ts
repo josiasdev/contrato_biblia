@@ -4,6 +4,7 @@ export const STELLAR_CONFIG = {
   rpcUrl: "https://rpc-futurenet.stellar.org",
   horizonUrl: "https://horizon-futurenet.stellar.org",
   contractId: process.env.NEXT_PUBLIC_CONTRACT_ID || "CBIBLIA_SOROBAN_CONTRACT_ID_FUTURENET",
+  talTokenAddress: process.env.NEXT_PUBLIC_TAL_TOKEN_ADDRESS || "CTAL_TOKEN_SOROBAN_SAC_ADDRESS",
   adminAddress: process.env.NEXT_PUBLIC_ADMIN_ADDRESS || "GADMIN...",
 };
 

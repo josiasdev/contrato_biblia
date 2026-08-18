@@ -265,4 +265,45 @@ mod tests {
         );
         assert!(valido);
     }
+
+    #[test]
+    fn test_reivindicar_recompensa_com_token_tal() {
+        use soroban_sdk::token::StellarAssetClient;
+
+        let env = Env::default();
+        let contract_id = env.register(ContratoBiblia, ());
+        let client = ContratoBibliaClient::new(&env, &contract_id);
+
+        let admin = Address::generate(&env);
+        let leitor = Address::generate(&env);
+        env.mock_all_auths();
+        client.initialize(&admin);
+
+        // Criar um contrato de token Stellar (SAC mock) para o Token TAL
+        let token_admin = Address::generate(&env);
+        let token_contract = env.register_stellar_asset_contract_v2(token_admin.clone());
+        let token_address = token_contract.address();
+        let token_admin_client = StellarAssetClient::new(&env, &token_address);
+        let token_client = soroban_sdk::token::Client::new(&env, &token_address);
+
+        // Mint inicial de 1000 TAL para o contrato bíblico (Tesouraria)
+        token_admin_client.mint(&contract_id, &1000_0000000);
+        assert_eq!(token_client.balance(&contract_id), 1000_0000000);
+
+        // Admin configura o endereço do Token TAL no Contrato Bíblia
+        client.configurar_token_tal(&token_address);
+        assert_eq!(client.obter_token_tal(), Some(token_address.clone()));
+
+        // Leitor marca 1 versiculo como lido de um livro de 1 versiculo
+        client.registrar_meta_livro(&1, &1);
+        client.marcar_lido(&leitor, &id_gen_1_1());
+
+        // Reivindicar recompensa do Livro 1
+        client.reivindicar_recompensa_livro(&leitor, &1);
+
+        // Verificar que o leitor recebeu exatamente 100 TAL on-chain
+        assert_eq!(token_client.balance(&leitor), 100_0000000);
+        // Verificar que a tesouraria do contrato ficou com 900 TAL
+        assert_eq!(token_client.balance(&contract_id), 900_0000000);
+    }
 }

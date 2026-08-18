@@ -35,6 +35,7 @@ pub enum DataKey {
     Certificado(Address, TipoCertificado), // Marca se um leitor já emitiu determinado certificado
     ListaCertificados(Address),            // Vec<Certificado> por leitor
     MerkleRoot(VersaoBiblia),              // Merkle Root SHA-256 de uma versão completa da Bíblia
+    TokenTAL,                              // Address do contrato do Token TAL (Stellar Asset Contract / SAC)
 }
 
 #[contract]
@@ -188,6 +189,19 @@ impl ContratoBiblia {
         env.storage().persistent().set(&key, &total_versiculos);
     }
 
+    /// (Admin) Configura o endereço do contrato do Token TAL (Soroban Asset Contract / SAC)
+    pub fn configurar_token_tal(env: Env, token_address: Address) {
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).expect("Contrato não inicializado");
+        admin.require_auth();
+
+        env.storage().instance().set(&DataKey::TokenTAL, &token_address);
+    }
+
+    /// Retorna o endereço do contrato do Token TAL configurado
+    pub fn obter_token_tal(env: Env) -> Option<Address> {
+        env.storage().instance().get(&DataKey::TokenTAL)
+    }
+
     pub fn reivindicar_recompensa_livro(env: Env, leitor: Address, livro_id: u32) {
         leitor.require_auth();
 
@@ -209,13 +223,19 @@ impl ContratoBiblia {
 
         env.storage().persistent().set(&key_recompensa, &true);
 
-        let recompensa_em_tokens: u128 = 100_0000000;
+        let recompensa_em_tokens: i128 = 100_0000000;
+
+        // Se o contrato do Token TAL estiver configurado, realiza a transferência direta de 100 TAL on-chain
+        if let Some(token_address) = env.storage().instance().get::<DataKey, Address>(&DataKey::TokenTAL) {
+            let token_client = soroban_sdk::token::Client::new(&env, &token_address);
+            token_client.transfer(&env.current_contract_address(), &leitor, &recompensa_em_tokens);
+        }
 
         RecompensaReivindicada::publish(
             &RecompensaReivindicada{
                 leitor: leitor,
                 livro_id: livro_id,
-                valor: recompensa_em_tokens
+                valor: recompensa_em_tokens as u128
             }, &env
         );
     }
