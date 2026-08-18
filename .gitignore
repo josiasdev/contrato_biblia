@@ -8,3 +8,7 @@ Cargo.lock
 
 # IDE settings
 .idea/
+
+# Generated CLI Outputs (Merkle exports & Analytics)
+output/
+**/output/
