@@ -13,13 +13,12 @@ import {
   ArrowRight, 
   Flame,
   Award,
-  ExternalLink,
-  Lock,
-  Code
+  ScrollText,
+  Layers
 } from "lucide-react";
 
 export default function Home() {
-  const { isConnected, readVersesCount, talBalance, completedBooks } = useWallet();
+  const { readVersesCount, talBalance, completedBooks, certificates } = useWallet();
   const { t } = useTranslation();
 
   return (
@@ -35,7 +34,7 @@ export default function Home() {
             <span>{t("hero.badge")}</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
             {t("hero.title1")} <br />
             <span className="bg-gradient-to-r from-teal-400 via-emerald-300 to-teal-200 bg-clip-text text-transparent">
               {t("hero.title2")}
@@ -57,11 +56,11 @@ export default function Home() {
             </Link>
 
             <Link
-              href="/reflexoes"
+              href="/certificados"
               className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-elevated text-teal-300 hover:text-white border border-slate-700 hover:border-teal-500/50 font-semibold text-sm transition-all"
             >
-              <MessageSquareQuote className="w-4 h-4 text-teal-400" />
-              <span>{t("hero.cta.feed")}</span>
+              <ScrollText className="w-4 h-4 text-teal-400" />
+              <span>Meus Certificados</span>
             </Link>
           </div>
         </div>
@@ -94,7 +93,7 @@ export default function Home() {
       </section>
 
       {/* Stats Grid */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="bg-elevated p-6 rounded-2xl border border-slate-800 space-y-2">
           <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400">
             <BookOpen className="w-5 h-5" />
@@ -130,6 +129,15 @@ export default function Home() {
           <div className="text-3xl font-extrabold text-white font-mono-tech">{completedBooks.length}</div>
           <p className="text-[11px] font-mono-tech text-slate-500">{t("stats.books_sub")}</p>
         </div>
+
+        <div className="bg-elevated p-6 rounded-2xl border border-slate-800 space-y-2">
+          <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400">
+            <ScrollText className="w-5 h-5" />
+          </div>
+          <span className="text-xs font-mono-tech text-slate-400 block">{t("stats.certificates")}</span>
+          <div className="text-3xl font-extrabold text-teal-400 font-mono-tech">{certificates.length}</div>
+          <p className="text-[11px] font-mono-tech text-slate-500">{t("stats.certificates_sub")}</p>
+        </div>
       </section>
 
       {/* Testament Reading Journey Track */}
@@ -162,9 +170,9 @@ export default function Home() {
             <span className="font-mono-tech font-extrabold text-xl text-accent block">
               {t("section.03")}
             </span>
-            <h3 className="font-bold text-lg text-white">Recompensas em Tokens TAL</h3>
+            <h3 className="font-bold text-lg text-white">Certificados & Recompensas</h3>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Ao atingir 100% de leitura de um livro, a função `reivindicar_recompensa_livro` emite um evento Soroban para acionar a distribuição de 100 TAL.
+              Ao concluir livros, categorias ou testamentos, receba credenciais Soulbound não-transferíveis com hash SHA-256 e resgate 100 tokens TAL.
             </p>
           </div>
         </div>

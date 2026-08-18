@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { getAddress, isConnected as checkFreighterConnected, requestAccess } from "@stellar/freighter-api";
+import { CertificadoItem, TipoCertificadoKey } from "@/lib/stellar";
 
 interface WalletContextType {
   address: string | null;
@@ -16,6 +17,10 @@ interface WalletContextType {
   readVerses: Set<string>;
   claimBookReward: (bookId: number) => Promise<boolean>;
   claimedRewards: Set<number>;
+  certificates: CertificadoItem[];
+  emitCertificate: (tipo: TipoCertificadoKey) => Promise<CertificadoItem>;
+  newlyIssuedCert: CertificadoItem | null;
+  clearNewlyIssuedCert: () => void;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -26,13 +31,20 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [talBalance, setTalBalance] = useState<number>(0);
   
-  // State for read verses "bookId-chapter-verse"
   const [readVerses, setReadVerses] = useState<Set<string>>(
-    new Set(["1-1-1", "1-1-2"])
+    new Set(["1-1-1", "1-1-2", "1-1-3"])
   );
-  
-  // State for claimed rewards (book IDs)
-  const [claimedRewards, setClaimedRewards] = useState<Set<number>>(new Set());
+  const [claimedRewards, setClaimedRewards] = useState<Set<number>>(new Set([1]));
+  const [certificates, setCertificates] = useState<CertificadoItem[]>([
+    {
+      id: "cert-genesis",
+      leitor: "GBIBLIA_LEITOR_SOROBAN_DEMO_FUTURENET_X728",
+      tipo: { type: "Livro", bookId: 1 },
+      timestamp: 1776450000,
+      hash_certificado: "c901192a4df04a05d8765eedcf9fa699c2b1728bffa0492debea41e08360b6d9",
+    },
+  ]);
+  const [newlyIssuedCert, setNewlyIssuedCert] = useState<CertificadoItem | null>(null);
 
   useEffect(() => {
     checkConnection();
@@ -50,7 +62,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (e) {
-      console.log("Freighter non disponível:", e);
+      console.log("Freighter wallet check error:", e);
     }
   };
 
@@ -64,7 +76,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         setTalBalance(100);
         return;
       }
-      // Demo fallback
       const demoAddress = "GBIBLIA_LEITOR_SOROBAN_DEMO_FUTURENET_X728";
       setAddress(demoAddress);
       setIsWalletConnected(true);
@@ -101,6 +112,25 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
+  const emitCertificate = async (tipo: TipoCertificadoKey): Promise<CertificadoItem> => {
+    const hash = Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
+    const newCert: CertificadoItem = {
+      id: `cert-${Date.now()}`,
+      leitor: address || "GBIBLIA_LEITOR_SOROBAN_DEMO_FUTURENET_X728",
+      tipo,
+      timestamp: Math.floor(Date.now() / 1000),
+      hash_certificado: hash,
+    };
+
+    setCertificates((prev) => [...prev, newCert]);
+    setNewlyIssuedCert(newCert);
+    return newCert;
+  };
+
+  const clearNewlyIssuedCert = () => {
+    setNewlyIssuedCert(null);
+  };
+
   return (
     <WalletContext.Provider
       value={{
@@ -116,6 +146,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         readVerses,
         claimBookReward,
         claimedRewards,
+        certificates,
+        emitCertificate,
+        newlyIssuedCert,
+        clearNewlyIssuedCert,
       }}
     >
       {children}
