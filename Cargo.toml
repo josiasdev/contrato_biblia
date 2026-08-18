@@ -1,6 +1,6 @@
 [package]
 name = "contrato_biblia"
-version = "1.1.0"
+version = "1.1.1"
 edition = "2021"
 publish = true
 readme = "README_PT_BR.md"
@@ -8,26 +8,29 @@ authors = ["Josias Batista <francisco.batista67@alu.ufc.br>"]
 description = "Uma biblioteca Rust para um smart contract na blockchain Stellar (Soroban) focado em uma aplicação da Bíblia Sagrada."
 license = "MIT"
 repository = "https://github.com/josiasdev/contrato_biblia"
-keywords = ["stellar" , "soroban", "blockchain", "smart-contract", "bible"]
+keywords = ["stellar", "soroban", "blockchain", "smart-contract", "bible"]
 categories = ["api-bindings"]
-
+exclude = [
+    "frontend/**",
+    ".idea/**",
+    "test_snapshots/**"
+]
 
 [dependencies]
 soroban-sdk = "23.0.3"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
 
- [lib]
- crate-type = ["cdylib", "rlib"]
-
- [profile.release]
- opt-level = "z"
- overflow-checks = true
- debug = 0
- strip = "symbols"
- debug-assertions = false
- panic = "abort"
- codegen-units = 1
- lto = true
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true
 
 [dev-dependencies]
 soroban-sdk = { version = "23.0.3", features = ["testutils"] }
