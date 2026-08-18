@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Base — Slate */
+    --background: 222 47% 11%;          /* #0f172a */
+    --background-elevated: 217 33% 17%; /* cards, painéis */
+    --border: 217 19% 27%;
+
+    --foreground: 210 40% 98%;          /* texto principal */
+    --foreground-muted: 215 20% 65%;     /* texto secundário */
+
+    /* Accent — Teal/Emerald */
+    --accent: 173 80% 40%;              /* #14b8a6 */
+    --accent-hover: 173 80% 46%;
+    --accent-muted: 173 40% 20%;        /* backgrounds sutis, badges */
+
+    /* Semântica */
+    --success: 160 84% 39%;
+    --warning: 38 92% 50%;
+    --danger: 0 72% 51%;
+    --info: 199 89% 48%;
+
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Fira Code', 'JetBrains Mono', monospace;
+  }
+}
+
+body {
+  background-color: #0f172a;
+  color: #f8fafc;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+.font-mono-tech {
+  font-family: var(--font-mono);
+}
+
+/* Glassmorphism & Elevation Utilities */
+.bg-elevated {
+  background-color: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-teal {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.08) 0%, rgba(30, 41, 59, 0.85) 100%);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(20, 184, 166, 0.25);
+}
+
+.teal-glow {
+  box-shadow: 0 0 25px -5px rgba(20, 184, 166, 0.25);
+}
+
+.text-accent {
+  color: #14b8a6;
+}
+
+.bg-accent-muted {
+  background-color: rgba(20, 184, 166, 0.15);
+}
+
+.border-accent-subtle {
+  border-color: rgba(20, 184, 166, 0.3);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #14b8a6;
+}
