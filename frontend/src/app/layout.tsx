@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { WalletProvider } from "@/context/WalletContext";
 import { LanguageProvider } from "@/context/LanguageContext";
@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   title: "Contrato Bíblia | Stellar Soroban Smart Contract dApp",
   description:
     "Aplicação descentralizada para prova de leitura da Bíblia Sagrada, reflexões comunitárias e recompensas em tokens TAL na blockchain Stellar (Futurenet).",
+  manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0b1324",
 };
 
 export default function RootLayout({

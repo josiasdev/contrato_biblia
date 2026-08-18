@@ -48,6 +48,35 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     checkConnection();
+
+    // Listener de sincronização automática PWA quando a internet reconecta
+    const handleOnline = () => {
+      const offlineQueue = localStorage.getItem("offline_read_queue");
+      if (offlineQueue) {
+        try {
+          const pendingVerses: string[] = JSON.parse(offlineQueue);
+          if (pendingVerses.length > 0) {
+            setReadVerses((prev) => {
+              const updated = new Set(prev);
+              pendingVerses.forEach((v) => updated.add(v));
+              return updated;
+            });
+            localStorage.removeItem("offline_read_queue");
+          }
+        } catch (e) {
+          console.error("Erro ao sincronizar leitura offline PWA:", e);
+        }
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("online", handleOnline);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("online", handleOnline);
+      }
+    };
   }, []);
 
   const checkConnection = async () => {

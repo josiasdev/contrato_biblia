@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWallet } from "@/context/WalletContext";
 import { useTranslation } from "@/context/LanguageContext";
 import { BIBLE_VERSIONS, VersaoBibliaKey } from "@/lib/stellar";
@@ -13,7 +13,11 @@ import {
   Globe,
   X,
   GitBranch,
-  Radio
+  Radio,
+  Volume2,
+  VolumeX,
+  Play,
+  Pause
 } from "lucide-react";
 
 interface VerseCardProps {
@@ -51,7 +55,53 @@ export function VerseCard({
   const [isPublic, setIsPublic] = useState(true);
   const [showHash, setShowHash] = useState(false);
 
+  // Audio Text-to-Speech state
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [speechRate, setSpeechRate] = useState<number>(1.0);
+
   const activeVersionMeta = BIBLE_VERSIONS.find((v) => v.id === selectedVersion) || BIBLE_VERSIONS[0];
+
+  // Stop speech synthesis on unmount
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  const handleToggleAudio = () => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      alert("Seu navegador não suporta a API de áudio Text-to-Speech.");
+      return;
+    }
+
+    if (isPlayingAudio) {
+      window.speechSynthesis.cancel();
+      setIsPlayingAudio(false);
+    } else {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+
+      // Detect language based on Bible Version
+      if (["ARC", "ACF"].includes(selectedVersion)) {
+        utterance.lang = "pt-BR";
+      } else if (["KJV", "ASV"].includes(selectedVersion)) {
+        utterance.lang = "en-US";
+      } else if (selectedVersion === "RVA") {
+        utterance.lang = "es-ES";
+      } else {
+        utterance.lang = "pt-BR";
+      }
+
+      utterance.rate = speechRate;
+      utterance.onend = () => setIsPlayingAudio(false);
+      utterance.onerror = () => setIsPlayingAudio(false);
+
+      window.speechSynthesis.speak(utterance);
+      setIsPlayingAudio(true);
+    }
+  };
 
   const handleMarkRead = async () => {
     setIsMarking(true);
@@ -70,8 +120,10 @@ export function VerseCard({
   };
 
   return (
-    <div className={`p-6 rounded-2xl transition-all duration-300 ${
-      isRead 
+    <div className={`p-6 rounded-2xl transition-all duration-300 relative ${
+      isPlayingAudio
+        ? "glass-panel-teal border-teal-400 border-2 teal-glow shadow-2xl scale-[1.01]"
+        : isRead 
         ? "glass-panel-teal border-teal-500/40 teal-glow" 
         : "bg-elevated border-slate-800 hover:border-slate-700"
     }`}>
@@ -109,14 +161,44 @@ export function VerseCard({
           )}
         </div>
 
-        <button
-          onClick={() => setShowHash(!showHash)}
-          className="flex items-center gap-1 text-slate-400 hover:text-teal-400 text-xs font-mono-tech transition-colors"
-          title="Verificar Merkle Root & Proof SHA-256 On-Chain"
-        >
-          <GitBranch className="w-3.5 h-3.5 text-teal-400" />
-          <span>{showHash ? "Ocultar Prova" : "Merkle Proof SHA-256"}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Audio Player Controls */}
+          <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 p-0.5 rounded-lg text-xs font-mono-tech">
+            <button
+              onClick={handleToggleAudio}
+              className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-bold transition-all ${
+                isPlayingAudio
+                  ? "bg-rose-500 text-white animate-pulse"
+                  : "bg-teal-500/10 text-teal-300 hover:bg-teal-500/20"
+              }`}
+              title="Ouvir narração do versículo"
+            >
+              {isPlayingAudio ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-teal-400" />}
+              <span>{isPlayingAudio ? "Parar" : "Ouvir"}</span>
+            </button>
+
+            {/* Speed Selector */}
+            <select
+              value={speechRate}
+              onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+              className="bg-transparent text-[10px] font-mono-tech text-slate-400 px-1 focus:outline-none"
+              title="Velocidade de reprodução do áudio"
+            >
+              <option value="1">1.0x</option>
+              <option value="1.25">1.25x</option>
+              <option value="1.5">1.5x</option>
+            </select>
+          </div>
+
+          <button
+            onClick={() => setShowHash(!showHash)}
+            className="flex items-center gap-1 text-slate-400 hover:text-teal-400 text-xs font-mono-tech transition-colors"
+            title="Verificar Merkle Root & Proof SHA-256 On-Chain"
+          >
+            <GitBranch className="w-3.5 h-3.5 text-teal-400" />
+            <span>{showHash ? "Ocultar Prova" : "Merkle Proof SHA-256"}</span>
+          </button>
+        </div>
       </div>
 
       {/* Merkle Root & SHA-256 Proof Drawer */}
@@ -142,7 +224,9 @@ export function VerseCard({
       )}
 
       {/* Verse Text */}
-      <p className="text-lg text-slate-100 font-serif leading-relaxed italic mb-6">
+      <p className={`text-lg font-serif leading-relaxed italic mb-6 transition-colors ${
+        isPlayingAudio ? "text-teal-200 font-semibold" : "text-slate-100"
+      }`}>
         "{text}"
       </p>
 

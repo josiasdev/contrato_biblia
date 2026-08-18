@@ -1,0 +1,16 @@
+{
+  "name": "Contrato Bíblia - Stellar Soroban dApp",
+  "short_name": "Bíblia Web3",
+  "description": "Smart Contract Soroban na blockchain Stellar para verificação de autenticidade, leitura bíblica e recompensas on-chain.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0b1324",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}
