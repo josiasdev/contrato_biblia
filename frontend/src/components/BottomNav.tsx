@@ -8,7 +8,8 @@ import {
   BookOpen, 
   MessageSquareQuote, 
   ScrollText,
-  Coins 
+  Coins,
+  Trophy
 } from "lucide-react";
 
 export function BottomNav() {
@@ -21,6 +22,7 @@ export function BottomNav() {
     { name: t("nav.community"), href: "/reflexoes", icon: MessageSquareQuote },
     { name: t("nav.certificates"), href: "/certificados", icon: ScrollText },
     { name: t("nav.rewards"), href: "/recompensas", icon: Coins },
+    { name: "Ranking", href: "/ranking", icon: Trophy },
   ];
 
   return (

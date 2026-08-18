@@ -96,6 +96,14 @@ pub struct IdTexto {
     pub versiculo: u32,
 }
 
+/// Registro de Sequência de Leitura Diária (Racha On-Chain)
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RachaLeitura {
+    pub ultimo_timestamp: u64,
+    pub dias_consecutivos: u32,
+}
+
 // Constantes para validação e limites do sistema
 pub const MAX_REFLEXAO_CHARS: u32 = 500;
 pub const MAX_COMENTARIO_CHARS: u32 = 200;

@@ -14,7 +14,8 @@ import {
   Sparkles,
   Layers,
   ScrollText,
-  LogOut
+  LogOut,
+  Trophy
 } from "lucide-react";
 
 export function Navbar() {
@@ -28,6 +29,7 @@ export function Navbar() {
     { name: t("nav.community"), href: "/reflexoes", icon: MessageSquareQuote },
     { name: t("nav.certificates"), href: "/certificados", icon: ScrollText },
     { name: t("nav.rewards"), href: "/recompensas", icon: Coins },
+    { name: "Ranking", href: "/ranking", icon: Trophy },
   ];
 
   return (

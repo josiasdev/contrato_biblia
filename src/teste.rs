@@ -346,4 +346,44 @@ mod tests {
         let reflexao_destacada = client.obter_reflexao(&autor, &id_texto).unwrap();
         assert!(reflexao_destacada.destaque);
     }
+
+    #[test]
+    fn test_racha_leitura_e_bonus_7_dias() {
+        use soroban_sdk::token::StellarAssetClient;
+        use soroban_sdk::testutils::Ledger;
+
+        let env = Env::default();
+        let contract_id = env.register(ContratoBiblia, ());
+        let client = ContratoBibliaClient::new(&env, &contract_id);
+
+        let admin = Address::generate(&env);
+        let leitor = Address::generate(&env);
+        env.mock_all_auths();
+        client.initialize(&admin);
+
+        // SAC mock do Token TAL
+        let token_admin = Address::generate(&env);
+        let token_contract = env.register_stellar_asset_contract_v2(token_admin.clone());
+        let token_address = token_contract.address();
+        let token_admin_client = StellarAssetClient::new(&env, &token_address);
+        let token_client = soroban_sdk::token::Client::new(&env, &token_address);
+
+        token_admin_client.mint(&contract_id, &1000_0000000);
+        client.configurar_token_tal(&token_address);
+
+        // Simular leitura em 7 dias consecutivos
+        let mut t = 1_000_000u64;
+        for i in 1..=7 {
+            env.ledger().set_timestamp(t);
+            let id_texto = IdTexto { livro: 1, capitulo: 1, versiculo: i };
+            client.marcar_lido(&leitor, &id_texto);
+
+            let racha = client.obter_racha_leitura(&leitor);
+            assert_eq!(racha.dias_consecutivos, i);
+            t += 86_400; // Avança 1 dia
+        }
+
+        // Assertar bônus de 10 TAL recebido no 7º dia
+        assert_eq!(token_client.balance(&leitor), 10_0000000);
+    }
 }

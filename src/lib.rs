@@ -36,6 +36,7 @@ pub enum DataKey {
     ListaCertificados(Address),            // Vec<Certificado> por leitor
     MerkleRoot(VersaoBiblia),              // Merkle Root SHA-256 de uma versão completa da Bíblia
     TokenTAL,                              // Address do contrato do Token TAL (Stellar Asset Contract / SAC)
+    RachaLeitura(Address),                 // Sequência de Leitura Diária (Racha Leitura)
 }
 
 #[contract]
@@ -91,10 +92,53 @@ impl ContratoBiblia {
             let mut progresso_atual: u32 = env.storage().persistent().get(&key_progresso).unwrap_or(0);
             progresso_atual += 1;
             env.storage().persistent().set(&key_progresso, &progresso_atual);
+
+            // Atualização da Sequência de Leitura Diária (Racha Leitura)
+            let agora = env.ledger().timestamp();
+            let key_racha = DataKey::RachaLeitura(leitor.clone());
+            let racha_existente: Option<RachaLeitura> = env.storage().persistent().get(&key_racha);
+
+            let mut novos_dias = 1;
+            if let Some(racha) = racha_existente {
+                let diff_segundos = agora.saturating_sub(racha.ultimo_timestamp);
+                let um_dia = 86_400;
+                let dois_dias = 172_800;
+
+                if diff_segundos >= um_dia && diff_segundos <= dois_dias {
+                    novos_dias = racha.dias_consecutivos + 1;
+                } else if diff_segundos < um_dia {
+                    novos_dias = racha.dias_consecutivos; // Mesmo dia
+                }
+            }
+
+            let novo_racha = RachaLeitura {
+                ultimo_timestamp: agora,
+                dias_consecutivos: novos_dias,
+            };
+            env.storage().persistent().set(&key_racha, &novo_racha);
+
+            // Bônus de 7 Dias Consecutivos (+10 TAL)
+            if novos_dias > 0 && novos_dias % 7 == 0 {
+                if let Some(token_address) = env.storage().instance().get::<DataKey, Address>(&DataKey::TokenTAL) {
+                    let token_client = soroban_sdk::token::Client::new(&env, &token_address);
+                    let bonus_streak: i128 = 10_0000000;
+                    token_client.transfer(&env.current_contract_address(), &leitor, &bonus_streak);
+                }
+            }
+
             String::from_str(&env, "Leitura registrada e progresso atualizado!");
         } else {
             String::from_str(&env, "Este versículo já foi marcado como lido.");
         }
+    }
+
+    /// Retorna a sequência de leitura diária (Racha Leitura) do leitor
+    pub fn obter_racha_leitura(env: Env, leitor: Address) -> RachaLeitura {
+        let key = DataKey::RachaLeitura(leitor);
+        env.storage().persistent().get(&key).unwrap_or(RachaLeitura {
+            ultimo_timestamp: 0,
+            dias_consecutivos: 0,
+        })
     }
 
     pub fn verificar_leitura(env: Env, leitor: Address, id_texto: IdTexto) -> String {
