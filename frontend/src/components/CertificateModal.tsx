@@ -2,15 +2,16 @@
 
 import { useWallet } from "@/context/WalletContext";
 import { useTranslation } from "@/context/LanguageContext";
+import { generateCertificatePDF } from "@/lib/pdf";
 import { formatAddress, formatTimestamp } from "@/lib/utils";
 import { 
   BadgeCheck, 
   Sparkles, 
   X, 
-  Share2, 
+  FileDown, 
   Copy, 
   Check, 
-  ShieldCheck 
+  ExternalLink 
 } from "lucide-react";
 import { useState } from "react";
 
@@ -25,6 +26,10 @@ export function CertificateModal() {
     navigator.clipboard.writeText(newlyIssuedCert.hash_certificado);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownloadPDF = () => {
+    generateCertificatePDF(newlyIssuedCert, "Certificado On-Chain");
   };
 
   return (
@@ -92,13 +97,24 @@ export function CertificateModal() {
         </div>
 
         {/* Modal Footer Actions */}
-        <div className="flex items-center justify-center gap-3 pt-2">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <button
-            onClick={clearNewlyIssuedCert}
-            className="w-full py-3 px-6 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs font-mono-tech shadow-lg shadow-teal-500/20 active:scale-95 transition-all"
+            onClick={handleDownloadPDF}
+            className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs font-mono-tech shadow-lg shadow-teal-500/20 active:scale-95 transition-all"
           >
-            Concluir & Fechar
+            <FileDown className="w-4 h-4" />
+            <span>Baixar Certificado PDF</span>
           </button>
+
+          <a
+            href="https://lab.stellar.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 py-3 px-4 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-teal-400 hover:border-slate-700 font-semibold text-xs font-mono-tech transition-all"
+          >
+            <span>Ver no Ledger</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
         </div>
       </div>
     </div>

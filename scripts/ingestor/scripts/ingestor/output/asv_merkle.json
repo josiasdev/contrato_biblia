@@ -1,0 +1,23 @@
+{
+  "versao": "ASV",
+  "merkle_root": "ada98826e1980606a075d8560f5a94fe5c1e036ee6f6b05412a1cc63b2cdd182",
+  "total_versiculos": 4,
+  "proofs": {
+    "1-1-1": [
+      "c7c8c48dcdab71363309990b2eaf4023725062200e7c8528e6cb10657d886114",
+      "db90ce0b2a89da0d363a2af2b084af35fca9c04213c8a17cba1addb102f0df15"
+    ],
+    "1-1-2": [
+      "2a58b640f4e48b254562832c36e19a39667f154ce6c9841d38820b1e0c4a3753",
+      "db90ce0b2a89da0d363a2af2b084af35fca9c04213c8a17cba1addb102f0df15"
+    ],
+    "19-23-1": [
+      "7e71e0f5dc1863f38ee32eb761513080b5dc5eca905e49964f030632af9cf277",
+      "07c8414a2fe75b3dde975faad8f68faff421dedad2ef79bf56817e549aff84d3"
+    ],
+    "43-3-16": [
+      "e57b381fc978d82f4a64b70e1db0c521cd9c35931270e81c7b7223d9124ef5fd",
+      "07c8414a2fe75b3dde975faad8f68faff421dedad2ef79bf56817e549aff84d3"
+    ]
+  }
+}

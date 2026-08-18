@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useWallet } from "@/context/WalletContext";
 import { useTranslation } from "@/context/LanguageContext";
 import { CertificadoItem, TipoCertificadoKey } from "@/lib/stellar";
+import { generateCertificatePDF } from "@/lib/pdf";
 import { formatAddress, formatTimestamp } from "@/lib/utils";
 import { 
   Award, 
@@ -11,10 +12,9 @@ import {
   Lock, 
   Copy, 
   Check, 
-  Share2, 
+  FileDown, 
   ExternalLink,
-  Sparkles,
-  BookOpen
+  Sparkles
 } from "lucide-react";
 
 interface CertificateCardProps {
@@ -54,6 +54,12 @@ export function CertificateCard({
     setIsIssuing(true);
     await emitCertificate(tipo);
     setIsIssuing(false);
+  };
+
+  const handleDownloadPDF = () => {
+    if (issuedCert) {
+      generateCertificatePDF(issuedCert, title);
+    }
   };
 
   return (
@@ -117,7 +123,7 @@ export function CertificateCard({
         )}
       </div>
 
-      {/* Unlocked Details (Hash SHA-256 + Date) */}
+      {/* Unlocked Details (Hash SHA-256 + Date + Action Buttons) */}
       {issuedCert ? (
         <div className="mt-4 pt-4 border-t border-slate-800/80 space-y-3">
           <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 font-mono-tech text-[11px] space-y-1.5">
@@ -146,14 +152,18 @@ export function CertificateCard({
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-1">
-            <span className="flex items-center gap-1 text-[11px] font-mono-tech text-emerald-400 font-semibold">
-              <BadgeCheck className="w-3.5 h-3.5" />
-              {t("certificates.claimed")}
-            </span>
+          <div className="flex items-center justify-between gap-2 pt-1">
+            <button
+              onClick={handleDownloadPDF}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/30 text-xs font-mono-tech font-semibold transition-all active:scale-95"
+              title="Baixar Certificado em PDF"
+            >
+              <FileDown className="w-3.5 h-3.5" />
+              <span>Baixar PDF</span>
+            </button>
 
             <a
-              href={`https://lab.stellar.org/`}
+              href="https://lab.stellar.org/"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-xs font-mono-tech text-slate-400 hover:text-teal-400 transition-colors"
